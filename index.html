@@ -8,102 +8,95 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div id="dynalytix-app">
+<div id="dyn-app">
 
-  <!-- SIDEBAR — collapsed by default, hover = expand, pin = lock open -->
-  <aside class="sidebar" id="sidebar">
-
-    <div class="sidebar-logo">
-      <img src="images/icon.svg" alt="Logo" class="logo-img" />
-      <span class="nav-label logo-text">Dynalytix</span>
-      <button class="pin-btn" id="pin-btn" title="Pin sidebar">📌</button>
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="dyn-sidebar" id="dyn-sidebar">
+    <div class="dyn-sidebar-logo">
+      <img src="images/icon.svg" alt="Logo" class="dyn-logo-img" />
+      <span class="dyn-logo-text">Dynalytix</span>
+      <button class="dyn-pin-btn" id="dyn-pin-btn" title="Pin sidebar">📌</button>
     </div>
-
-    <nav class="sidebar-nav">
-      <a class="nav-item" data-page="homepage" href="#homepage" title="Homepage">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label">Homepage</span>
+    <nav class="dyn-sidebar-nav">
+      <a class="dyn-nav-item" data-page="homepage" href="#">
+        <span class="dyn-nav-icon">🏠</span>
+        <span class="dyn-nav-label">Homepage</span>
       </a>
-      <a class="nav-item" data-page="leaderboard" href="#leaderboard" title="Leaderboard">
-        <span class="nav-icon">📊</span>
-        <span class="nav-label">Leaderboard</span>
+      <a class="dyn-nav-item" data-page="leaderboard" href="#">
+        <span class="dyn-nav-icon">📊</span>
+        <span class="dyn-nav-label">Leaderboard</span>
       </a>
-
-      <div class="nav-section-title"><span class="nav-label">DASHBOARDS</span></div>
-
-      <a class="nav-item" data-page="scored-events" href="#scored-events" title="Scored Events">
-        <span class="nav-icon">⚡</span>
-        <span class="nav-label">Scored Events</span>
+      <div class="dyn-nav-section">DASHBOARDS</div>
+      <a class="dyn-nav-item" data-page="scored-events" href="#">
+        <span class="dyn-nav-icon">⚡</span>
+        <span class="dyn-nav-label">Scored Events</span>
       </a>
-      <a class="nav-item" data-page="scored-events-vehicle" href="#scored-events-vehicle" title="Scored Events — Vehicle">
-        <span class="nav-icon">🚗</span>
-        <span class="nav-label">Scored Events — Vehicle</span>
+      <a class="dyn-nav-item" data-page="scored-events-vehicle" href="#">
+        <span class="dyn-nav-icon">🚗</span>
+        <span class="dyn-nav-label">Scored Events — Vehicle</span>
       </a>
-
-      <div class="nav-section-title"><span class="nav-label">REPORTS</span></div>
-
-      <a class="nav-item" data-page="scorecard" href="#scorecard" title="Scorecard">
-        <span class="nav-icon">📋</span>
-        <span class="nav-label">Scorecard</span>
+      <div class="dyn-nav-section">REPORTS</div>
+      <a class="dyn-nav-item" data-page="scorecard" href="#">
+        <span class="dyn-nav-icon">📋</span>
+        <span class="dyn-nav-label">Scorecard</span>
       </a>
-      <a class="nav-item" data-page="pm" href="#pm" title="Preventative Maintenance">
-        <span class="nav-icon">🔧</span>
-        <span class="nav-label">Preventative Maintenance</span>
+      <a class="dyn-nav-item" data-page="pm" href="#">
+        <span class="dyn-nav-icon">🔧</span>
+        <span class="dyn-nav-label">Preventative Maintenance</span>
       </a>
-      <a class="nav-item" data-page="compliance" href="#compliance" title="Compliance &amp; Utilization">
-        <span class="nav-icon">📅</span>
-        <span class="nav-label">Compliance &amp; Utilization</span>
+      <a class="dyn-nav-item" data-page="compliance" href="#">
+        <span class="dyn-nav-icon">📅</span>
+        <span class="dyn-nav-label">Compliance &amp; Utilization</span>
       </a>
-      <a class="nav-item" data-page="coaching" href="#coaching" title="Coaching &amp; Engagement">
-        <span class="nav-icon">🎓</span>
-        <span class="nav-label">Coaching &amp; Engagement</span>
+      <a class="dyn-nav-item" data-page="coaching" href="#">
+        <span class="dyn-nav-icon">🎓</span>
+        <span class="dyn-nav-label">Coaching &amp; Engagement</span>
       </a>
     </nav>
-
-    <div class="sidebar-footer">
-      <a class="nav-item" href="#settings" title="Settings">
-        <span class="nav-icon">⚙️</span>
-        <span class="nav-label">Settings</span>
+    <div class="dyn-sidebar-footer">
+      <a class="dyn-nav-item" href="#">
+        <span class="dyn-nav-icon">⚙️</span>
+        <span class="dyn-nav-label">Settings</span>
       </a>
     </div>
-
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content" id="main-content">
-    <header class="topbar">
-      <div class="topbar-title" id="page-title">Dynalytix</div>
-      <div class="topbar-controls">
-        <div class="date-range-display" id="date-range-display"></div>
-        <select class="period-selector" id="period-selector">
+  <main class="dyn-main">
+    <header class="dyn-topbar">
+      <div class="dyn-topbar-title" id="page-title">Dynalytix</div>
+      <div class="dyn-topbar-controls">
+        <div class="dyn-date-display" id="date-range-display"></div>
+        <select class="dyn-period-select" id="period-selector">
           <option value="7days">Last 7 days</option>
           <option value="14days">Last 14 days</option>
           <option value="30days" selected>Last 30 days</option>
           <option value="90days">Last 90 days</option>
         </select>
-        <button class="btn-export" id="btn-export" title="Export CSV">⬆️</button>
+        <button class="dyn-btn-export" id="btn-export" title="Export CSV">⬆️</button>
       </div>
     </header>
-
-    <div class="page-container" id="page-container">
-      <div class="loading-spinner" id="loading">
-        <div class="spinner"></div>
+    <div class="dyn-page-container" id="page-container">
+      <div class="dyn-loading" id="loading">
+        <div class="dyn-spinner"></div>
         <p>Loading data...</p>
       </div>
     </div>
   </main>
 
-  <script src="src/utils.js"></script>
-  <script src="src/api.js"></script>
-  <script src="src/pages/homepage.js"></script>
-  <script src="src/pages/leaderboard.js"></script>
-  <script src="src/pages/scored-events.js"></script>
-  <script src="src/pages/scorecard.js"></script>
-  <script src="src/pages/preventative-maintenance.js"></script>
-  <script src="src/pages/compliance-utilization.js"></script>
-  <script src="src/pages/coaching-engagement.js"></script>
-  <script src="src/sidebar.js"></script>
-  <script src="src/app.js"></script>
-</div><!-- #dynalytix-app -->
+</div><!-- #dyn-app -->
+
+<script src="src/utils.js"></script>
+<script src="src/api.js"></script>
+<script src="src/pages/homepage.js"></script>
+<script src="src/pages/leaderboard.js"></script>
+<script src="src/pages/scored-events.js"></script>
+<script src="src/pages/scorecard.js"></script>
+<script src="src/pages/preventative-maintenance.js"></script>
+<script src="src/pages/compliance-utilization.js"></script>
+<script src="src/pages/coaching-engagement.js"></script>
+<script src="src/sidebar.js"></script>
+<script src="src/app.js"></script>
+
 </body>
 </html>

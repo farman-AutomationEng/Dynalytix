@@ -1,12 +1,12 @@
 /**
  * app.js — Main Application Controller
- * Routing, navigation, global state, Geotab SDK lifecycle
+ * Handles routing, navigation, global state, and Geotab SDK lifecycle
  *
  * FIXES:
- *  - initialize() ab callback() call karta hai (required by SDK)
- *  - focus() ab current page reload karta hai (org filter change pe bhi)
- *  - blur() cleanup karta hai
- *  - Page registry correct references use karta hai
+ *  - initialize() now calls callback() as required by SDK
+ *  - focus() reloads current page (also fires on org filter change)
+ *  - blur() handles cleanup
+ *  - window.location.hash is never SET — only read (avoids MyGeotab routing conflict)
  */
 
 const App = {
@@ -22,7 +22,7 @@ const App = {
   },
 
   // ---- PAGE MODULE REGISTRY ----
-  // Note: ScoredcardPage (original typo preserved — scorecard.js mein window.ScoredcardPage hai)
+  // Note: ScoredcardPage typo preserved — scorecard.js exports window.ScoredcardPage
   get pages() {
     return {
       'homepage':              typeof HomepagePage !== 'undefined'    ? HomepagePage    : null,
@@ -49,15 +49,15 @@ const App = {
   },
 
   // ============================================================
-  // SETUP (called once from initialize lifecycle)
+  // SETUP — called once from initialize lifecycle
   // ============================================================
 
   setup(freshApi, state) {
-    // GeotabAPI initialize karo
+    // Initialize the Geotab API wrapper
     GeotabAPI.init(freshApi);
 
-    // URL params se group filter lo
-    const urlParams = new URLSearchParams(window.location.search);
+    // Read group filter from URL params if present
+    const urlParams   = new URLSearchParams(window.location.search);
     const groupsParam = urlParams.get('groups');
     if (groupsParam) {
       try {
@@ -68,18 +68,18 @@ const App = {
       }
     }
 
-    // Date range calculate karo
+    // Calculate initial date range
     this.updateDateRange();
 
-    // Event listeners lagao
+    // Attach UI event listeners
     this.setupEventListeners();
 
-    // ---- INITIAL PAGE ----
-    // NOTE: window.location.hash SET nahi karte — MyGeotab routing se conflict hota hai
-    // Hash sirf READ karte hain
+    // Determine initial page from hash — read only, never set
+    // MyGeotab sometimes appends its own hash (e.g. #addin-dynalytix-index)
+    // Unknown hashes fall back to homepage
     const KNOWN_PAGES = ['homepage','leaderboard','scored-events','scored-events-vehicle','scorecard','pm','compliance','coaching'];
-    const rawHash = window.location.hash.replace('#', '');
-    const hash = KNOWN_PAGES.includes(rawHash) ? rawHash : 'homepage';
+    const rawHash     = window.location.hash.replace('#', '');
+    const hash        = KNOWN_PAGES.includes(rawHash) ? rawHash : 'homepage';
     this.state.currentPage = hash;
     this.updateNavActive(hash);
     this.updatePageTitle(hash);
@@ -102,6 +102,7 @@ const App = {
       display.textContent = Utils.formatDateRange(fromDate, toDate);
     }
 
+    // Clear cache so fresh data loads for the new period
     GeotabAPI.clearCache();
   },
 
@@ -110,7 +111,7 @@ const App = {
   // ============================================================
 
   setupEventListeners() {
-    // Period selector
+    // Period selector dropdown
     const periodSel = document.getElementById('period-selector');
     if (periodSel) {
       periodSel.value = this.state.period;
@@ -121,7 +122,7 @@ const App = {
       });
     }
 
-    // Sidebar nav links
+    // Sidebar navigation links
     document.querySelectorAll('.nav-item[data-page]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -130,7 +131,7 @@ const App = {
       });
     });
 
-    // NOTE: hashchange listener nahi lagaya — MyGeotab ke saath conflict hota hai
+    // NOTE: hashchange listener intentionally omitted — conflicts with MyGeotab routing
 
     // Export button
     const exportBtn = document.getElementById('btn-export');
@@ -145,7 +146,7 @@ const App = {
 
   navigateTo(pageName) {
     this.state.currentPage = pageName;
-    // window.location.hash SET nahi karte — MyGeotab routing conflict
+    // NOTE: window.location.hash is NOT set here — causes MyGeotab routing conflict
     this.updateNavActive(pageName);
     this.updatePageTitle(pageName);
     this.loadPage(pageName);
@@ -178,11 +179,12 @@ const App = {
       const pageModule = this.pages[pageName];
 
       if (pageModule && typeof pageModule.render === 'function') {
-        // Chart.js instances ko destroy karo memory leak se bachne ke liye
-        Chart.helpers && Chart.helpers.each && Chart.helpers.each(
-          Chart.instances || [],
-          (instance) => { try { instance.destroy(); } catch(e) {} }
-        );
+        // Destroy existing Chart.js instances to prevent memory leaks
+        if (typeof Chart !== 'undefined' && Chart.instances) {
+          Object.values(Chart.instances).forEach(instance => {
+            try { instance.destroy(); } catch(e) {}
+          });
+        }
 
         container.innerHTML = '';
         await pageModule.render(container, {
@@ -245,16 +247,16 @@ const App = {
 
 // ============================================================
 //  MyGEOTAB ADD-IN ENTRY POINT
-//  Lifecycle: initialize → focus → blur
-//  ⚠️ callback() zaroor call karna hai initialize mein
+//  Lifecycle order: initialize → focus → blur
+//  CRITICAL: callback() must always be called in initialize()
 // ============================================================
 
 geotab.addin.dynalytix = function() {
   return {
 
     /**
-     * INITIALIZE — sirf ek baar chalega (page first load pe)
-     * callback() call karna MANDATORY hai — iske baad focus() chalega
+     * INITIALIZE — runs only once on first page load
+     * callback() is MANDATORY — it triggers focus() after setup completes
      */
     initialize: function(freshApi, state, callback) {
       try {
@@ -262,35 +264,34 @@ geotab.addin.dynalytix = function() {
       } catch (err) {
         console.error('[Dynalytix] Initialize error:', err);
       } finally {
-        callback(); // ← CRITICAL: yeh na hoga toh focus() nahi chalega
+        callback(); // Must always be called — even on error
       }
     },
 
     /**
-     * FOCUS — UI ready hone ke baad aur har baar jab user is page pe aaye
-     * Org filter change pe bhi yahi call hota hai
+     * FOCUS — called when UI is ready and whenever user returns to this page
+     * Also fires when the org filter changes
      */
     focus: function(freshApi, state) {
-      // API reference fresh karo (org change ke case mein)
+      // Refresh API reference in case org context changed
       GeotabAPI.init(freshApi);
       GeotabAPI.clearCache();
 
-      // Org filter se updated group IDs lo
+      // Update group IDs from current org filter selection
       if (state && typeof state.getGroupFilter === 'function') {
         const filter = state.getGroupFilter();
         App.state.selectedGroupIds = (filter || []).map(g => g.id || g);
       }
 
-      // Current page ka data reload karo
+      // Reload current page with fresh data
       App.loadPage(App.state.currentPage);
     },
 
     /**
-     * BLUR — jab user dusri page pe jaye
+     * BLUR — called when user navigates away from this page
      */
     blur: function() {
-      // Future: koi cleanup ya state save karna ho toh yahan karo
-      console.log('[Dynalytix] blur — page left');
+      console.log('[Dynalytix] blur — user navigated away');
     }
 
   };

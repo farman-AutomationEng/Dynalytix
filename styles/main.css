@@ -75,7 +75,7 @@
 .dyn-logo-text {
   font-weight: 700;
   font-size: 15px;
-  color: var(--dyn-primary);
+  color: #FFA726;
   opacity: 0;
   flex: 1;
   transition: opacity 0.18s ease;

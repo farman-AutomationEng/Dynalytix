@@ -1,9 +1,9 @@
 /**
  * api.js — Geotab API Wrapper
- * Caching, error handling, all entity calls
+ * All Geotab API calls with caching and error handling
  *
- * NOTE: Get() caps at 500 records by default.
- * Bade datasets ke liye resultsLimit badao ya GetFeed use karo.
+ * NOTE: Get() has a 500 record default limit.
+ * Use resultsLimit or GetFeed for large datasets.
  */
 
 const GeotabAPI = {
@@ -69,8 +69,8 @@ const GeotabAPI = {
   // ============================================================
 
   getDrivers(groupIds = []) {
-    // Geotab mein 'Driver' typeName kaam nahi karta
-    // 'User' use karna hota hai isDriver: true ke saath
+    // Geotab does not support 'Driver' as a typeName directly
+    // Use 'User' with isDriver: true filter instead
     const search = { isDriver: true };
     if (groupIds.length > 0) {
       search.groups = groupIds.map(id => ({ id }));
@@ -194,6 +194,7 @@ const GeotabAPI = {
   // AGGREGATE HELPERS
   // ============================================================
 
+  // Group exception events by device ID
   groupEventsByDevice(events) {
     const map = {};
     events.forEach(evt => {
@@ -204,6 +205,7 @@ const GeotabAPI = {
     return map;
   },
 
+  // Group exception events by driver ID
   groupEventsByDriver(events) {
     const map = {};
     events.forEach(evt => {
@@ -214,6 +216,7 @@ const GeotabAPI = {
     return map;
   },
 
+  // Aggregate trip metrics per device
   aggregateTrips(trips) {
     const map = {};
     trips.forEach(trip => {
@@ -224,6 +227,7 @@ const GeotabAPI = {
       map[id].idlingSeconds  += trip.idlingDuration  || 0;
       if (trip.start) map[id].days.add(trip.start.split('T')[0]);
     });
+    // Convert Set to count
     Object.keys(map).forEach(id => {
       map[id].daysDriven = map[id].days.size;
       delete map[id].days;
@@ -231,6 +235,7 @@ const GeotabAPI = {
     return map;
   },
 
+  // Count devices offline for N or more days
   countOfflineDevices(deviceStatusList, days = 5) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);

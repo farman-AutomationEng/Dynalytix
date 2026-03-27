@@ -73,12 +73,30 @@
 }
 .dyn-logo-img  { width: 34px; height: 34px; flex-shrink: 0; }
 .dyn-logo-text {
-  font-weight: 700;
-  font-size: 15px;
-  color: #FFA726;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
   opacity: 0;
   flex: 1;
   transition: opacity 0.18s ease;
+  white-space: nowrap;
+}
+.dyn-expanded .dyn-logo-text { opacity: 1; }
+
+.dyn-logo-line1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1B3A6B;
+  letter-spacing: 0.02em;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.dyn-logo-line2 {
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: #4A6FA5;
+  letter-spacing: 0.03em;
+  font-family: Georgia, 'Times New Roman', serif;
 }
 .dyn-expanded .dyn-logo-text { opacity: 1; }
 

@@ -320,15 +320,15 @@ const HomepagePage = {
     let insight = '';
 
     if (highRisk > 0) {
-      insight += `<p>⚠️ <strong>${highRisk} driver${highRisk > 1 ? 's' : ''}</strong> high-risk category mein hain (score ≥ 5000).</p>`;
+      insight += `<p>⚠️ <strong>${highRisk} driver${highRisk > 1 ? 's' : ''}</strong> are in the high-risk category (score ≥ 5000).</p>`;
     }
     if (worst) {
-      insight += `<p>🔴 Driver <strong>${worst.name.trim()}</strong> ka score sabse zyada hai: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
+      insight += `<p>🔴 Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
     }
     if (topEvt) {
       insight += `<p>📊 Sabse common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
     }
-    return insight || '<p>✅ Is period mein koi notable safety issues nahi hain.</p>';
+    return insight || '<p>✅ No notable safety issues found in this period.</p>';
   },
 
   // ============================================================

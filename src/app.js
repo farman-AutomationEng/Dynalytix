@@ -209,13 +209,13 @@ const App = {
         container.innerHTML = `
           <div class="coming-soon">
             <h2>🚧 Coming Soon</h2>
-            <p>Page "<strong>${pageName}</strong>" abhi develop ho rahi hai.</p>
+            <p>Page "<strong>${pageName}</strong>" is currently under development.</p>
           </div>
         `;
       }
     } catch (err) {
       console.error('[Dynalytix] Page load error:', err);
-      Utils.showError('Data load karne mein masla aaya: ' + err.message);
+      Utils.showError('Failed to load data: ' + err.message);
     } finally {
       Utils.hideLoading();
     }
@@ -232,7 +232,7 @@ const App = {
   exportCurrentPage() {
     const tables = document.querySelectorAll('.data-table');
     if (tables.length === 0) {
-      alert('Export ke liye koi data table nahi mila.');
+      alert('No data table found to export.');
       return;
     }
 

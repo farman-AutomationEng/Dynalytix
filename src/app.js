@@ -74,14 +74,13 @@ const App = {
     // Event listeners lagao
     this.setupEventListeners();
 
-    // Pehli baar navigate karo
-    // MyGeotab kabhi kabhi apna hash append karta hai (e.g. #addin-dynalytix-index)
-    // Unknown hash ko homepage pe redirect karo
+    // ---- INITIAL PAGE ----
+    // NOTE: window.location.hash SET nahi karte — MyGeotab routing se conflict hota hai
+    // Hash sirf READ karte hain
     const KNOWN_PAGES = ['homepage','leaderboard','scored-events','scored-events-vehicle','scorecard','pm','compliance','coaching'];
     const rawHash = window.location.hash.replace('#', '');
     const hash = KNOWN_PAGES.includes(rawHash) ? rawHash : 'homepage';
     this.state.currentPage = hash;
-    window.location.hash = hash;
     this.updateNavActive(hash);
     this.updatePageTitle(hash);
 
@@ -131,18 +130,7 @@ const App = {
       });
     });
 
-    // Browser back/forward
-    window.addEventListener('hashchange', () => {
-      const KNOWN_PAGES = ['homepage','leaderboard','scored-events','scored-events-vehicle','scorecard','pm','compliance','coaching'];
-      const raw  = window.location.hash.replace('#', '');
-      const hash = KNOWN_PAGES.includes(raw) ? raw : 'homepage';
-      if (hash !== this.state.currentPage) {
-        this.state.currentPage = hash;
-        this.updateNavActive(hash);
-        this.updatePageTitle(hash);
-        this.loadPage(hash);
-      }
-    });
+    // NOTE: hashchange listener nahi lagaya — MyGeotab ke saath conflict hota hai
 
     // Export button
     const exportBtn = document.getElementById('btn-export');
@@ -157,7 +145,7 @@ const App = {
 
   navigateTo(pageName) {
     this.state.currentPage = pageName;
-    window.location.hash   = pageName;
+    // window.location.hash SET nahi karte — MyGeotab routing conflict
     this.updateNavActive(pageName);
     this.updatePageTitle(pageName);
     this.loadPage(pageName);

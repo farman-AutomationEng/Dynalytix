@@ -123,7 +123,7 @@ const App = {
     }
 
     // Sidebar navigation links
-    document.querySelectorAll('.nav-item[data-page]').forEach(link => {
+    document.querySelectorAll('.dyn-nav-item[data-page]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const page = link.getAttribute('data-page');
@@ -153,8 +153,8 @@ const App = {
   },
 
   updateNavActive(pageName) {
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.toggle('active', item.getAttribute('data-page') === pageName);
+    document.querySelectorAll('.dyn-nav-item').forEach(item => {
+      item.classList.toggle('dyn-active', item.getAttribute('data-page') === pageName);
     });
   },
 

@@ -171,8 +171,8 @@ const HomepagePage = {
             <span class="score-value">${Utils.formatNumber(medianScore)}</span>
           </div>
         </div>
-        <canvas id="score-gauge-canvas" width="280" height="160"></canvas>
-        <div class="score-number" style="color:${scoreColor}">${Utils.formatNumber(currentScore)}</div>
+        <canvas id="score-gauge-canvas" width="220" height="130"></canvas>
+        <div class="score-number" style="color:${scoreColor};font-size:28px;margin-top:-12px">${Utils.formatNumber(currentScore)}</div>
         <div class="score-category" style="border-color:${scoreColor};color:${scoreColor}">${scoreCategory}</div>
         <div class="score-trend-label">${Math.abs(trend)}% ${trend > 0 ? '↑ vs last period' : '↓ vs last period'}</div>
       </div>
@@ -367,7 +367,7 @@ const HomepagePage = {
     const needleAngle = Math.PI + pct * Math.PI;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + 85 * Math.cos(needleAngle), cy + 85 * Math.sin(needleAngle));
+    ctx.lineTo(cx + 66 * Math.cos(needleAngle), cy + 66 * Math.sin(needleAngle));
     ctx.strokeStyle = '#333';
     ctx.lineWidth   = 3;
     ctx.stroke();

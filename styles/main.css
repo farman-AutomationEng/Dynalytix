@@ -1,10 +1,9 @@
 /* ============================================================
-   DYNALYTIX — COMPLETE CSS
-   All structural classes use dyn- prefix (matches index.html)
-   Card/table/badge classes have no prefix (used by JS page modules)
+   DYNALYTIX — COMPLETE CSS v2.0
+   dyn- prefix for all structural classes (matches index.html)
+   Sidebar: always expanded by default, collapses on unpin
    ============================================================ */
 
-/* ---- CSS VARIABLES ---- */
 :root {
   --primary:        #1565C0;
   --primary-light:  #1976D2;
@@ -21,16 +20,15 @@
   --border:         #E0E0E0;
   --text-primary:   #212121;
   --text-secondary: #757575;
-  --sidebar-collapsed: 56px;
-  --sidebar-expanded:  240px;
-  --topbar-height:  56px;
+  --sidebar-w:      240px;
+  --sidebar-min:    56px;
+  --topbar-h:       56px;
   --shadow:         0 2px 8px rgba(0,0,0,0.08);
   --radius:         8px;
-  --transition:     0.2s ease;
 }
 
-/* ---- RESET ---- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 html, body {
   height: 100%;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -40,17 +38,18 @@ html, body {
 }
 
 /* ============================================================
-   LAYOUT — dyn- prefixed (matches index.html)
+   APP WRAPPER
    ============================================================ */
-
 #dyn-app {
   display: flex;
   min-height: 100vh;
 }
 
-/* ---- SIDEBAR ---- */
+/* ============================================================
+   SIDEBAR — starts expanded (240px), collapses to 56px
+   ============================================================ */
 .dyn-sidebar {
-  width: var(--sidebar-collapsed);
+  width: var(--sidebar-w);           /* full width by default */
   min-height: 100vh;
   background: #fff;
   border-right: 1px solid var(--border);
@@ -60,25 +59,30 @@ html, body {
   left: 0; top: 0; bottom: 0;
   z-index: 200;
   overflow: hidden;
-  transition: width var(--transition);
-  box-shadow: 2px 0 8px rgba(0,0,0,0.06);
+  transition: width 0.2s ease;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.05);
 }
 
-/* Expanded state — hover or pinned */
-.dyn-sidebar.dyn-expanded {
-  width: var(--sidebar-expanded);
+/* Collapsed state — only when user unpins */
+.dyn-sidebar.dyn-collapsed {
+  width: var(--sidebar-min);
 }
 
-/* ---- SIDEBAR LOGO ---- */
+/* Hover expands even when collapsed */
+.dyn-sidebar.dyn-collapsed:hover {
+  width: var(--sidebar-w);
+}
+
+/* ---- LOGO AREA ---- */
 .dyn-sidebar-logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 8px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
-  min-height: var(--topbar-height);
-  overflow: hidden;
+  min-height: var(--topbar-h);
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .dyn-logo-img {
@@ -94,44 +98,42 @@ html, body {
   color: #FFA726;
   font-style: italic;
   font-family: Georgia, serif;
-  opacity: 0;
-  transition: opacity var(--transition);
+  flex: 1;
+  transition: opacity 0.2s;
   white-space: nowrap;
 }
 
-.dyn-sidebar.dyn-expanded .dyn-logo-text {
-  opacity: 1;
+/* Hide text when collapsed (and not hovered) */
+.dyn-sidebar.dyn-collapsed:not(:hover) .dyn-logo-text {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Pin button */
 .dyn-pin-btn {
-  margin-left: auto;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
-  opacity: 0;
-  padding: 4px;
+  font-size: 13px;
+  padding: 4px 6px;
   border-radius: 4px;
+  color: var(--text-secondary);
   flex-shrink: 0;
-  transition: opacity var(--transition), background var(--transition);
+  transition: opacity 0.2s, background 0.15s;
 }
-.dyn-sidebar.dyn-expanded .dyn-pin-btn {
-  opacity: 0.5;
-}
-.dyn-sidebar.dyn-expanded .dyn-pin-btn:hover {
-  opacity: 1;
-  background: var(--bg);
-}
-.dyn-pin-btn.dyn-pinned {
-  opacity: 1 !important;
-  color: var(--primary);
+.dyn-pin-btn:hover { background: var(--bg); color: var(--primary); }
+.dyn-pin-btn.dyn-pinned { color: var(--primary); }
+
+/* Hide pin btn when collapsed and not hovered */
+.dyn-sidebar.dyn-collapsed:not(:hover) .dyn-pin-btn {
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* ---- SIDEBAR NAV ---- */
+/* ---- NAV ---- */
 .dyn-sidebar-nav {
-  padding: 8px 0;
   flex: 1;
+  padding: 8px 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -139,16 +141,16 @@ html, body {
 .dyn-nav-section {
   font-size: 9px;
   font-weight: 700;
-  color: var(--text-secondary);
   letter-spacing: 0.1em;
-  padding: 12px 18px 4px;
   text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 14px 16px 4px;
   white-space: nowrap;
-  opacity: 0;
-  transition: opacity var(--transition);
+  transition: opacity 0.2s;
 }
-.dyn-sidebar.dyn-expanded .dyn-nav-section {
-  opacity: 1;
+
+.dyn-sidebar.dyn-collapsed:not(:hover) .dyn-nav-section {
+  opacity: 0;
 }
 
 .dyn-nav-item {
@@ -156,18 +158,15 @@ html, body {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  cursor: pointer;
   text-decoration: none;
   color: var(--text-primary);
   font-size: 13px;
-  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
   white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
   overflow: hidden;
 }
-.dyn-nav-item:hover {
-  background: #F0F4FF;
-  color: var(--primary);
-}
+.dyn-nav-item:hover  { background: #F0F4FF; color: var(--primary); }
 .dyn-nav-item.dyn-active {
   background: #E8F0FE;
   color: var(--primary);
@@ -176,40 +175,48 @@ html, body {
 }
 
 .dyn-nav-icon {
-  font-size: 18px;
-  width: 24px;
+  font-size: 17px;
+  width: 22px;
   text-align: center;
   flex-shrink: 0;
 }
 
 .dyn-nav-label {
   flex: 1;
-  opacity: 0;
-  transition: opacity var(--transition);
-}
-.dyn-sidebar.dyn-expanded .dyn-nav-label {
-  opacity: 1;
+  transition: opacity 0.2s;
 }
 
-/* ---- SIDEBAR FOOTER ---- */
+.dyn-sidebar.dyn-collapsed:not(:hover) .dyn-nav-label {
+  opacity: 0;
+}
+
+/* ---- FOOTER ---- */
 .dyn-sidebar-footer {
   border-top: 1px solid var(--border);
   padding: 8px 0;
 }
 
-/* ---- MAIN CONTENT ---- */
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
 .dyn-main {
-  margin-left: var(--sidebar-collapsed);
+  margin-left: var(--sidebar-w);
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left var(--transition);
+  transition: margin-left 0.2s ease;
 }
 
-/* ---- TOPBAR ---- */
+.dyn-sidebar.dyn-collapsed ~ .dyn-main {
+  margin-left: var(--sidebar-min);
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
 .dyn-topbar {
-  height: var(--topbar-height);
+  height: var(--topbar-h);
   background: #fff;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -219,7 +226,6 @@ html, body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .dyn-topbar-title {
@@ -249,9 +255,7 @@ html, body {
   color: var(--text-primary);
   outline: none;
 }
-.dyn-period-select:focus {
-  border-color: var(--primary);
-}
+.dyn-period-select:focus { border-color: var(--primary); }
 
 .dyn-btn-export {
   border: 1px solid var(--border);
@@ -260,18 +264,21 @@ html, body {
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 14px;
-  color: var(--text-primary);
 }
 .dyn-btn-export:hover { background: var(--bg); }
 
-/* ---- PAGE CONTAINER ---- */
+/* ============================================================
+   PAGE CONTAINER
+   ============================================================ */
 .dyn-page-container {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
 }
 
-/* ---- LOADING SPINNER ---- */
+/* ============================================================
+   LOADING
+   ============================================================ */
 .dyn-loading {
   display: flex;
   flex-direction: column;
@@ -288,15 +295,13 @@ html, body {
   border: 4px solid var(--border);
   border-top: 4px solid var(--primary);
   border-radius: 50%;
-  animation: dyn-spin 0.8s linear infinite;
+  animation: dynSpin 0.8s linear infinite;
 }
 
-@keyframes dyn-spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes dynSpin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   CARDS — no prefix (generated by JS page modules)
+   CARDS
    ============================================================ */
 .card {
   background: var(--card-bg);
@@ -343,9 +348,7 @@ html, body {
 @media (max-width: 1100px) {
   .homepage-grid { grid-template-columns: 1fr 1fr; }
   .score-card, .trend-card, .kpi-card, .performance-table-card,
-  .insights-card, .coaching-snapshot-card, .event-performance-card {
-    grid-column: span 1;
-  }
+  .insights-card, .coaching-snapshot-card, .event-performance-card { grid-column: span 1; }
 }
 
 /* ============================================================
@@ -380,7 +383,7 @@ html, body {
   display: inline-block; padding: 2px 10px;
   border-radius: 4px; font-weight: 700; font-size: 13px;
 }
-.score-badge.neutral   { background: #F5F5F5; color: var(--text-secondary); }
+.score-badge.neutral    { background: #F5F5F5; color: var(--text-secondary); }
 .score-badge.high-score { background: #F4433622; color: var(--red); border: 1px solid var(--red); }
 
 /* ============================================================
@@ -389,13 +392,10 @@ html, body {
 .table-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .tab-btn {
   padding: 8px 16px; background: none; border: none;
-  border-bottom: 2px solid transparent; cursor: pointer;
-  font-size: 13px; color: var(--text-secondary); font-weight: 500;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; font-size: 13px; color: var(--text-secondary); font-weight: 500;
 }
-.tab-btn.active {
-  border-bottom-color: var(--primary);
-  color: var(--primary); font-weight: 700;
-}
+.tab-btn.active { border-bottom-color: var(--primary); color: var(--primary); font-weight: 700; }
 .tab-content        { display: none; }
 .tab-content.active { display: block; }
 
@@ -403,20 +403,18 @@ html, body {
    DATA TABLES
    ============================================================ */
 .table-scroll { overflow-x: auto; }
-
-.data-table {
-  width: 100%; border-collapse: collapse; font-size: 13px;
-}
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table th {
   text-align: left; padding: 8px 12px;
   font-size: 11px; font-weight: 700;
-  color: var(--text-secondary); border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap; cursor: pointer;
-  user-select: none;
 }
 .data-table th:hover { color: var(--primary); }
 .data-table td {
-  padding: 8px 12px; border-bottom: 1px solid #F5F5F5;
+  padding: 8px 12px;
+  border-bottom: 1px solid #F5F5F5;
   vertical-align: middle;
 }
 .data-table tr:hover { background: #FAFAFA; }
@@ -456,8 +454,8 @@ html, body {
 .top-events-card { grid-column: 1 / 3; }
 .bottom5-card    { grid-column: 3 / 5; }
 
-.donut-wrapper    { position: relative; display: flex; flex-direction: column; align-items: center; }
-.donut-legend     { margin-top: 12px; }
+.donut-wrapper     { position: relative; display: flex; flex-direction: column; align-items: center; }
+.donut-legend      { margin-top: 12px; }
 .donut-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 4px 0; }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .dot.red    { background: var(--red); }
@@ -473,32 +471,26 @@ html, body {
 .alert-card      { border: 1px solid #FFCCBC; }
 
 /* ============================================================
-   KPI EVENTS GRID (Scored Events page)
+   KPI EVENTS GRID
    ============================================================ */
 .kpi-events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px; margin-bottom: 16px;
 }
-.kpi-event-card  { padding: 14px; text-align: center; }
+.kpi-event-card       { padding: 14px; text-align: center; }
 .kpi-event-card.alert { border-color: #FFCCBC; background: #FFF8F6; }
-.kpi-event-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
-.kpi-event-count { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+.kpi-event-label      { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
+.kpi-event-count      { font-size: 28px; font-weight: 800; color: var(--text-primary); }
 .kpi-event-count.small { font-size: 18px; }
-.kpi-event-trend { font-size: 12px; margin-top: 4px; }
+.kpi-event-trend      { font-size: 12px; margin-top: 4px; }
 
 /* ============================================================
    REPORT PAGE
    ============================================================ */
 .report-page { display: flex; flex-direction: column; gap: 16px; }
-
-.report-controls {
-  display: flex; align-items: center; gap: 16px; padding: 12px 0;
-}
-.toggle-label {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; cursor: pointer;
-}
+.report-controls { display: flex; align-items: center; gap: 16px; padding: 12px 0; }
+.toggle-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 .btn-export-csv {
   border: 1px solid var(--border); background: #fff;
   padding: 6px 14px; border-radius: var(--radius);
@@ -507,12 +499,11 @@ html, body {
 .btn-export-csv:hover { background: var(--bg); }
 
 /* ============================================================
-   UTILITY BARS & COLORED BADGES
+   UTILITIES
    ============================================================ */
-.util-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
-.util-bar      { height: 16px; border-radius: 3px; min-width: 2px; transition: width 0.3s; }
-
-.colored-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+.util-bar-wrap  { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.util-bar       { height: 16px; border-radius: 3px; min-width: 2px; transition: width 0.3s; }
+.colored-badge  { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
 .colored-badge.blue { background: #1565C022; color: var(--primary); }
 .colored-badge.teal { background: #00968822; color: var(--teal); }
 
@@ -525,7 +516,7 @@ html, body {
 .kpi-big        { font-size: 36px; font-weight: 800; color: var(--text-primary); }
 
 /* ============================================================
-   CHART CARD & LEGEND
+   CHART & LEGEND
    ============================================================ */
 .chart-card   { padding: 16px; }
 .chart-legend { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
@@ -568,6 +559,8 @@ html, body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
+  .dyn-sidebar { width: var(--sidebar-w) !important; }
+  .dyn-main    { margin-left: var(--sidebar-w) !important; }
   .leaderboard-grid { grid-template-columns: 1fr 1fr; }
   .kpi-row          { grid-template-columns: 1fr 1fr; }
 }
@@ -582,12 +575,8 @@ html, body {
 .sc-legend-title { font-weight: 700; color: var(--text-secondary); }
 .sc-legend-sep   { color: var(--text-secondary); }
 .sc-legend-item  { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
-
 .sc-table th.sc-col-evt { font-size: 10px; min-width: 80px; white-space: nowrap; }
-.sc-col-sticky {
-  position: sticky; left: 0; background: #fff;
-  z-index: 1; border-right: 1px solid var(--border);
-}
+.sc-col-sticky { position: sticky; left: 0; background: #fff; z-index: 1; border-right: 1px solid var(--border); }
 .sc-table tbody tr:hover .sc-col-sticky { background: #FAFAFA; }
 .sc-zero  { color: var(--text-secondary); text-align: center; }
 .sc-empty { text-align: center; padding: 20px; color: var(--text-secondary); }

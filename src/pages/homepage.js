@@ -326,7 +326,7 @@ const HomepagePage = {
       insight += `<p>🔴 Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
     }
     if (topEvt) {
-      insight += `<p>📊 Sabse common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
+      insight += `<p>📊 Most common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
     }
     return insight || '<p>✅ No notable safety issues found in this period.</p>';
   },

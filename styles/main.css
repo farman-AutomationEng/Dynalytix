@@ -297,13 +297,13 @@ html, body {
    ============================================================ */
 .homepage-grid {
   display: grid;
-  grid-template-columns: 280px 1fr 175px 175px;
-  grid-template-rows: auto auto auto auto;
+  grid-template-columns: 260px 1fr 165px 165px;
   gap: 16px;
+  align-items: start;
 }
 
 /* Row 1 */
-.score-card             { grid-column: 1;     grid-row: 1; text-align: center; }
+.score-card             { grid-column: 1;     grid-row: 1; text-align: center; max-height: 340px; }
 .trend-card             { grid-column: 2;     grid-row: 1; }
 .kpi-card               { grid-row: 1; }   /* auto-placed in cols 3 & 4, row 1 */
 

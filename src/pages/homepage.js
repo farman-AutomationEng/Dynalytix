@@ -183,7 +183,7 @@ const HomepagePage = {
           <span class="card-title">Score Trend</span>
           <span class="card-subtitle">Last 6 weekly periods</span>
         </div>
-        <canvas id="trend-chart-canvas" height="180"></canvas>
+        <canvas id="trend-chart-canvas" height="200"></canvas>
       </div>
 
       <!-- GPS OFFLINE -->
@@ -241,7 +241,7 @@ const HomepagePage = {
           <span class="card-title">Coaching Snapshot</span>
           <span class="card-subtitle">Last 6 periods</span>
         </div>
-        <canvas id="coaching-chart-canvas" height="180"></canvas>
+        <canvas id="coaching-chart-canvas" height="150"></canvas>
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot blue"></span>Views</span>
           <span class="legend-item"><span class="legend-dot green"></span>Sessions</span>

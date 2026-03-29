@@ -1,11 +1,12 @@
 /**
- * sidebar.js — Collapsible Hover Sidebar with Pin
- * Uses dyn- prefixed class names to avoid MyGeotab CSS conflicts
+ * sidebar.js — Sidebar with Pin/Unpin
+ * Default: EXPANDED (full width)
+ * Pin button click: COLLAPSE to icons-only
+ * Hover on collapsed: temporarily expand
  */
 
 (function() {
-  var pinned     = false;
-  var hoverTimer = null;
+  var pinned = true; // starts expanded = pinned open
 
   function init() {
     var sidebar = document.getElementById('dyn-sidebar');
@@ -13,32 +14,27 @@
 
     if (!sidebar) return;
 
-    // Expand on mouse enter
-    sidebar.addEventListener('mouseenter', function() {
-      clearTimeout(hoverTimer);
-      sidebar.classList.add('dyn-expanded');
-    });
+    // Start expanded (no dyn-collapsed class)
+    sidebar.classList.remove('dyn-collapsed');
 
-    // Collapse on mouse leave (unless pinned)
-    sidebar.addEventListener('mouseleave', function() {
-      hoverTimer = setTimeout(function() {
-        if (!pinned) {
-          sidebar.classList.remove('dyn-expanded');
-        }
-      }, 200);
-    });
-
-    // Toggle pin on button click
     if (pinBtn) {
+      pinBtn.classList.add('dyn-pinned');
+      pinBtn.title = 'Collapse sidebar';
+
       pinBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         pinned = !pinned;
-        pinBtn.classList.toggle('dyn-pinned', pinned);
-        pinBtn.title = pinned ? 'Unpin sidebar' : 'Pin sidebar';
+
         if (pinned) {
-          sidebar.classList.add('dyn-expanded');
+          // Pin open = expanded
+          sidebar.classList.remove('dyn-collapsed');
+          pinBtn.classList.add('dyn-pinned');
+          pinBtn.title = 'Collapse sidebar';
         } else {
-          sidebar.classList.remove('dyn-expanded');
+          // Unpin = collapsed (hover to peek)
+          sidebar.classList.add('dyn-collapsed');
+          pinBtn.classList.remove('dyn-pinned');
+          pinBtn.title = 'Expand sidebar';
         }
       });
     }
@@ -49,5 +45,4 @@
   } else {
     init();
   }
-
 })();

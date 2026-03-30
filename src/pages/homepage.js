@@ -83,7 +83,7 @@ const HomepagePage = {
       })
     );
 
-    // ---- COACHING SNAPSHOT ----
+    // ---- COACH SNAPSHOT ----
     const coachingByPeriod = periods6.map(p => {
       const periodLogs = coachingLogs.filter(log => {
         const d = new Date(log.dateTime || log.logTime || log.date);

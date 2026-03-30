@@ -15,7 +15,6 @@
 const HomepagePage = {
 
   async render(container, { api, fromDate, toDate, period, groupIds, settings }) {
-    // settings parameter reserved for future widget visibility control
 
     // ---- PARALLEL FETCH ----
     const [
@@ -135,6 +134,36 @@ const HomepagePage = {
     this.initTrendChart('trend-chart-canvas', trendScores);
     this.initCoachingChart('coaching-chart-canvas', coachingByPeriod);
     this.setupTableTabs();
+
+    // Apply widget visibility from saved settings (post-render, safe approach)
+    this.applyWidgetVisibility(settings || window.DynSettings || {});
+  },
+
+  /**
+   * Show or hide homepage widgets based on user settings.
+   * Post-render DOM manipulation — avoids brittle template literal changes.
+   */
+  applyWidgetVisibility(s) {
+    const grid = document.querySelector('.homepage-grid');
+    if (!grid) return;
+
+    // Each entry: [settingsKey, selector]
+    // Using IDs for kpi cards to avoid nth-child issues
+    const widgets = [
+      ['scoreTrend',       '#widget-score-trend'],
+      ['gpsOffline',       '#widget-gps-offline'],
+      ['cameraOffline',    '#widget-cam-offline'],
+      ['fleetPerformance', '#widget-fleet-perf'],
+      ['insights',         '#widget-insights'],
+      ['coachingSnapshot', '#widget-coaching-snap'],
+      ['eventPerformance', '#widget-event-perf'],
+    ];
+
+    widgets.forEach(([key, selector]) => {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      el.style.display = s[key] !== false ? '' : 'none';
+    });
   },
 
   // ============================================================
@@ -179,7 +208,7 @@ const HomepagePage = {
       </div>
 
       <!-- SCORE TREND CHART -->
-      <div class="card trend-card">
+      <div class="card trend-card" id="widget-score-trend">
         <div class="card-header">
           <span class="card-title">Score Trend</span>
           <span class="card-subtitle">Last 6 weekly periods</span>
@@ -188,27 +217,25 @@ const HomepagePage = {
       </div>
 
       <!-- GPS OFFLINE -->
-      <div class="card kpi-card">
+      <div class="card kpi-card" id="widget-gps-offline">
         <div class="card-header">
           <span class="card-title">GPS Offline</span>
           <span class="card-subtitle">5+ days</span>
         </div>
-        <div class="kpi-icon">📡</div>
         <div class="kpi-value ${gpsOfflineCount > 0 ? 'kpi-alert' : ''}">${gpsOfflineCount}/${totalDevices}</div>
       </div>
 
       <!-- CAMERAS OFFLINE -->
-      <div class="card kpi-card">
+      <div class="card kpi-card" id="widget-cam-offline">
         <div class="card-header">
           <span class="card-title">Cameras Offline</span>
           <span class="card-subtitle">5+ days</span>
         </div>
-        <div class="kpi-icon">📷</div>
         <div class="kpi-value ${cameraOfflineCount > 0 ? 'kpi-alert' : ''}">${cameraOfflineCount}/${cameraTotal}</div>
       </div>
 
       <!-- PERFORMANCE TABLE -->
-      <div class="card performance-table-card">
+      <div class="card performance-table-card" id="widget-fleet-perf">
         <div class="card-header">
           <span class="card-title">Fleet Performance</span>
           <span class="card-subtitle">Total unsafe driving points</span>
@@ -226,9 +253,9 @@ const HomepagePage = {
       </div>
 
       <!-- INSIGHTS -->
-      <div class="card insights-card">
+      <div class="card insights-card" id="widget-insights">
         <div class="card-header">
-          <span class="card-title">✨ Insights</span>
+          <span class="card-title">Insights</span>
           <span class="card-subtitle">Rule-based analysis</span>
         </div>
         <div class="insights-text">
@@ -237,7 +264,7 @@ const HomepagePage = {
       </div>
 
       <!-- COACHING SNAPSHOT -->
-      <div class="card coaching-snapshot-card">
+      <div class="card coaching-snapshot-card" id="widget-coaching-snap">
         <div class="card-header">
           <span class="card-title">Coaching Snapshot</span>
           <span class="card-subtitle">Last 6 periods</span>
@@ -250,7 +277,7 @@ const HomepagePage = {
       </div>
 
       <!-- EVENT PERFORMANCE -->
-      <div class="card event-performance-card">
+      <div class="card event-performance-card" id="widget-event-perf">
         <div class="card-header">
           <span class="card-title">Event Performance</span>
           <span class="card-subtitle">Top exception events vs last period</span>
@@ -321,13 +348,13 @@ const HomepagePage = {
     let insight = '';
 
     if (highRisk > 0) {
-      insight += `<p>⚠️ <strong>${highRisk} driver${highRisk > 1 ? 's' : ''}</strong> are in the high-risk category (score ≥ 5000).</p>`;
+      insight += `<p><strong>${highRisk} driver${highRisk > 1 ? 's' : ''}</strong> are in the high-risk category (score ≥ 5000).</p>`;
     }
     if (worst) {
-      insight += `<p>🔴 Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
+      insight += `<p>Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
     }
     if (topEvt) {
-      insight += `<p>📊 Most common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
+      insight += `<p>Most common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
     }
     return insight || '<p>✅ No notable safety issues found in this period.</p>';
   },
@@ -347,13 +374,12 @@ const HomepagePage = {
     const maxScore = 10000;
     const pct      = Math.min(score / maxScore, 1);
 
-    const isDarkGauge = document.getElementById('dyn-app')?.classList.contains('dyn-dark');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background arc
     ctx.beginPath();
     ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
-    ctx.strokeStyle = isDarkGauge ? '#2D3046' : '#E0E0E0';
+    ctx.strokeStyle = '#E0E0E0';
     ctx.lineWidth   = 20;
     ctx.stroke();
 

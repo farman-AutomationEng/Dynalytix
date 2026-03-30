@@ -435,7 +435,7 @@ html, body {
 
 .spotlight-name  { font-size: 15px; font-weight: 700; margin: 8px 0 4px; }
 .spotlight-group { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
-.spotlight-icons { font-size: 26px; margin: 8px 0; }
+.spotlight-icons { display: none; }
 .spotlight-score { font-size: 30px; font-weight: 800; }
 .alert-score     { color: var(--red); }
 .alert-card      { border: 1px solid #FFCCBC; }
@@ -595,7 +595,7 @@ html, body {
 .settings-widget-card.settings-widget-on  { border-color: #1565C044; background: #F0F8FF; }
 .settings-widget-card.settings-widget-off { background: #F9F9F9; opacity: 0.7; }
 
-.settings-widget-icon  { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
+.settings-widget-icon  { display: none; }
 .settings-widget-info  { flex: 1; min-width: 0; }
 .settings-widget-label { font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
 .settings-widget-desc  { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
@@ -684,7 +684,7 @@ html, body {
 }
 .comp-kpi-card       { text-align: center; padding: 16px 12px; }
 .comp-kpi-card.comp-kpi-alert { border-color: #FFCCBC; background: #FFF8F6; }
-.comp-kpi-icon       { font-size: 24px; margin-bottom: 6px; }
+.comp-kpi-icon       { display: none; }
 .comp-kpi-value      { font-size: 28px; font-weight: 800; color: var(--text-primary); }
 .comp-kpi-label      { font-size: 11px; color: var(--text-secondary); font-weight: 600;
                        text-transform: uppercase; margin-top: 4px; }

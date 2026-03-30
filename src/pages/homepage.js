@@ -347,12 +347,13 @@ const HomepagePage = {
     const maxScore = 10000;
     const pct      = Math.min(score / maxScore, 1);
 
+    const isDarkGauge = document.getElementById('dyn-app')?.classList.contains('dyn-dark');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background arc
     ctx.beginPath();
     ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
-    ctx.strokeStyle = '#E0E0E0';
+    ctx.strokeStyle = isDarkGauge ? '#2D3046' : '#E0E0E0';
     ctx.lineWidth   = 20;
     ctx.stroke();
 

@@ -1,22 +1,27 @@
 /**
  * homepage.js — Homepage Dashboard
+ * Designed to match GoAnalytics v3.9.7 layout exactly.
  *
- * Widgets:
- * 1. Org Score Gauge (semicircle canvas)
- * 2. Score Trend Bar Chart (last 6 periods — REAL API DATA)
- * 3. GPS Offline KPI
- * 4. Cameras Offline KPI
- * 5. Fleet Performance Table (Groups / Drivers tabs)
- * 6. AI Insights (rule-based)
- * 7. Coaching Snapshot Chart
- * 8. Event Performance Table
+ * Score card : Company name + gradient gauge (green→yellow→orange→red)
+ * Trend chart: Bars colored by score tier
+ * GPS/Camera : Clean SVG-icon KPI cards, side by side
  */
 
 const HomepagePage = {
 
   async render(container, { api, fromDate, toDate, period, groupIds, settings }) {
 
-    // ---- PARALLEL FETCH ----
+    const S    = settings || window.DynSettings || {};
+    const show = {
+      scoreTrend:       S.scoreTrend       !== false,
+      gpsOffline:       S.gpsOffline       !== false,
+      cameraOffline:    S.cameraOffline    !== false,
+      fleetPerformance: S.fleetPerformance !== false,
+      insights:         S.insights         !== false,
+      coachingSnapshot: S.coachingSnapshot !== false,
+      eventPerformance: S.eventPerformance !== false,
+    };
+
     const [
       events, ruleMap, deviceStatusList,
       devices, drivers, trips, coachingLogs
@@ -27,16 +32,14 @@ const HomepagePage = {
       api.getDevices(groupIds),
       api.getDrivers(groupIds),
       api.getTrips(fromDate, toDate, groupIds),
-      api.getAnnotationLogs(fromDate, toDate, groupIds)
+      api.getAnnotationLogs(fromDate, toDate, groupIds),
     ]);
 
-    // ---- PREVIOUS PERIOD ----
-    const periodMs = toDate - fromDate;
-    const prevTo   = new Date(fromDate);
-    const prevFrom = new Date(fromDate.getTime() - periodMs);
+    const periodMs   = toDate - fromDate;
+    const prevTo     = new Date(fromDate);
+    const prevFrom   = new Date(fromDate.getTime() - periodMs);
     const prevEvents = await api.getExceptionEvents(prevFrom, prevTo, groupIds);
 
-    // ---- SCORES ----
     const currentScore = Utils.calculateScore(events, ruleMap);
     const prevScore    = Utils.calculateScore(prevEvents, ruleMap);
     const trend        = Utils.calcTrend(currentScore, prevScore);
@@ -46,379 +49,399 @@ const HomepagePage = {
       .map(d => Utils.calculateScore(driverEventMap[d.id] || [], ruleMap))
       .filter(s => s > 0).sort((a, b) => a - b);
     const medianScore = driverScores.length
-      ? driverScores[Math.floor(driverScores.length / 2)]
-      : 0;
+      ? driverScores[Math.floor(driverScores.length / 2)] : 0;
 
-    // ---- GPS / CAMERA OFFLINE ----
-    const gpsOfflineCount  = api.countOfflineDevices(deviceStatusList, 5);
-    const totalDevices     = deviceStatusList.length;
-    const cameraDevices    = devices.filter(d =>
+    const gpsOfflineCount = api.countOfflineDevices(deviceStatusList, 5);
+    const totalDevices    = deviceStatusList.length;
+    const cameraDevices   = devices.filter(d =>
       (d.deviceType || '').toLowerCase().includes('surfsight') ||
       (d.name || '').toLowerCase().includes('surfsight') ||
-      (d.name || '').toLowerCase().includes('cam')
+      (d.name || '').toLowerCase().includes('cam') ||
+      (d.name || '').toLowerCase().includes('go focus')
     );
-    const cameraOfflineCount = deviceStatusList.filter(ds => {
-      return cameraDevices.some(cd => cd.id === ds.device?.id) && !ds.isDeviceCommunicating;
-    }).length;
+    const cameraTotal        = cameraDevices.length || totalDevices;
+    const cameraOfflineCount = deviceStatusList.filter(ds =>
+      cameraDevices.some(cd => cd.id === ds.device?.id) && !ds.isDeviceCommunicating
+    ).length;
 
-    // ---- TOP EVENTS ----
-    const eventCounts     = {};
-    const prevEventCounts = {};
-    events.forEach(e     => { const n = ruleMap[e.rule?.id]||'Unknown'; eventCounts[n]     = (eventCounts[n]||0)+1; });
-    prevEvents.forEach(e => { const n = ruleMap[e.rule?.id]||'Unknown'; prevEventCounts[n] = (prevEventCounts[n]||0)+1; });
+    const eventCounts = {}, prevEventCounts = {};
+    events.forEach(e     => { const n = ruleMap[e.rule?.id] || 'Unknown'; eventCounts[n]     = (eventCounts[n]     || 0) + 1; });
+    prevEvents.forEach(e => { const n = ruleMap[e.rule?.id] || 'Unknown'; prevEventCounts[n] = (prevEventCounts[n] || 0) + 1; });
 
     const topEvents = Object.entries(eventCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 5)
-      .map(([name, count]) => ({
-        name, count,
-        trend: Utils.calcTrend(count, prevEventCounts[name] || 0)
-      }));
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count, trend: Utils.calcTrend(count, prevEventCounts[name] || 0) }));
 
-    // ---- TREND CHART — REAL API DATA (last 6 periods) ----
-    const periods6     = Utils.getLast6Periods();
-    const trendScores  = await Promise.all(
-      periods6.map(async (p) => {
-        const pEvents = await api.getExceptionEvents(p.fromDate, p.toDate, groupIds);
-        return { label: p.label, score: Utils.calculateScore(pEvents, ruleMap) };
+    const periods6    = Utils.getLast6Periods();
+    const trendScores = await Promise.all(
+      periods6.map(async p => {
+        const pEvts = await api.getExceptionEvents(p.fromDate, p.toDate, groupIds);
+        return { label: p.label, score: Utils.calculateScore(pEvts, ruleMap) };
       })
     );
 
-    // ---- COACH SNAPSHOT ----
     const coachingByPeriod = periods6.map(p => {
-      const periodLogs = coachingLogs.filter(log => {
-        const d = new Date(log.dateTime || log.logTime || log.date);
+      const logs = coachingLogs.filter(l => {
+        const d = new Date(l.dateTime || l.logTime || l.date);
         return d >= p.fromDate && d <= p.toDate;
       });
-      return {
-        label:  p.label,
-        events: periodLogs.length,
-        views:  periodLogs.filter(l => l.viewed).length
-      };
+      return { label: p.label, events: logs.length, views: logs.filter(l => l.viewed).length };
     });
 
-    // ---- GROUP PERFORMANCE TABLE ----
-    const groups = await api.getGroups();
+    const groups         = await api.getGroups();
     const deviceEventMap = api.groupEventsByDevice(events);
+
     const groupRows = groups.slice(0, 10).map(g => {
-      const gDevices = devices.filter(d => (d.groups||[]).some(dg => dg.id === g.id));
+      const gDevices = devices.filter(d => (d.groups || []).some(dg => dg.id === g.id));
       const gEvents  = [];
-      gDevices.forEach(d => (deviceEventMap[d.id]||[]).forEach(e => gEvents.push(e)));
-      const score    = gEvents.length ? Utils.calculateScore(gEvents, ruleMap) : null;
-      const gCoach   = coachingLogs.filter(l => gDevices.some(d => d.id === l.device?.id));
-      return { name: g.name, score, trend: 0, coaching: gCoach.length, views: gCoach.filter(l=>l.viewed).length };
+      gDevices.forEach(d => (deviceEventMap[d.id] || []).forEach(e => gEvents.push(e)));
+      const score  = gEvents.length ? Utils.calculateScore(gEvents, ruleMap) : null;
+      const gCoach = coachingLogs.filter(l => gDevices.some(d => d.id === l.device?.id));
+      return { name: g.name, score, trend: 0, coaching: gCoach.length, views: gCoach.filter(l => l.viewed).length };
     });
 
-    // ---- DRIVER PERFORMANCE TABLE ----
     const driverRows = drivers.map(d => {
       const dEvts  = driverEventMap[d.id] || [];
       const score  = dEvts.length ? Utils.calculateScore(dEvts, ruleMap) : null;
       const dCoach = coachingLogs.filter(l => l.driver?.id === d.id || l.user?.id === d.id);
       return {
-        name:     ((d.firstName||'') + ' ' + (d.lastName||d.name||'')).trim(),
-        score,
-        trend:    0,
+        name: ((d.firstName || '') + ' ' + (d.lastName || d.name || '')).trim(),
+        score, trend: 0,
         coaching: dCoach.length,
-        views:    dCoach.filter(l=>l.viewed).length
+        views: dCoach.filter(l => l.viewed).length,
       };
     });
 
-    // ---- RENDER ----
     container.innerHTML = this.buildHTML({
       currentScore, prevScore, trend, medianScore,
       gpsOfflineCount, totalDevices,
-      cameraOfflineCount, cameraTotal: cameraDevices.length || totalDevices,
-      topEvents, coachingByPeriod, groupRows, driverRows, trendScores
+      cameraOfflineCount, cameraTotal,
+      topEvents, coachingByPeriod, groupRows, driverRows,
+      trendScores,
     });
 
     this.initGaugeChart('score-gauge-canvas', currentScore);
     this.initTrendChart('trend-chart-canvas', trendScores);
     this.initCoachingChart('coaching-chart-canvas', coachingByPeriod);
     this.setupTableTabs();
-
-    // Apply widget visibility from saved settings (post-render, safe approach)
-    this.applyWidgetVisibility(settings || window.DynSettings || {});
+    this.applyWidgetVisibility(S);
   },
-
-  /**
-   * Show or hide homepage widgets based on user settings.
-   * Post-render DOM manipulation — avoids brittle template literal changes.
-   */
-  applyWidgetVisibility(s) {
-    const grid = document.querySelector('.homepage-grid');
-    if (!grid) return;
-
-    // Each entry: [settingsKey, selector]
-    // Using IDs for kpi cards to avoid nth-child issues
-    const widgets = [
-      ['scoreTrend',       '#widget-score-trend'],
-      ['gpsOffline',       '#widget-gps-offline'],
-      ['cameraOffline',    '#widget-cam-offline'],
-      ['fleetPerformance', '#widget-fleet-perf'],
-      ['insights',         '#widget-insights'],
-      ['coachingSnapshot', '#widget-coaching-snap'],
-      ['eventPerformance', '#widget-event-perf'],
-    ];
-
-    widgets.forEach(([key, selector]) => {
-      const el = document.querySelector(selector);
-      if (!el) return;
-      el.style.display = s[key] !== false ? '' : 'none';
-    });
-  },
-
-  // ============================================================
-  // HTML BUILDER
-  // ============================================================
 
   buildHTML(data) {
     const {
       currentScore, trend, medianScore,
       gpsOfflineCount, totalDevices,
       cameraOfflineCount, cameraTotal,
-      topEvents, coachingByPeriod, groupRows, driverRows
+      topEvents, coachingByPeriod, groupRows, driverRows,
     } = data;
 
-    const scoreColor    = Utils.getScoreColor(currentScore);
-    const scoreCategory = Utils.getScoreCategory(currentScore);
+    const tier       = Utils.getScoreTier(currentScore);
+    const scoreColor = tier ? tier.color : '#4CAF50';
+    const scoreCat   = tier ? tier.label : 'Very Low';
+    const trendPos   = trend > 0;
+    const trendColor = trendPos ? '#F44336' : '#4CAF50';
+    const trendArrow = trendPos ? '↑' : '↓';
+    const trendSign  = trendPos ? '+' : '';
+
+    const medTier    = Utils.getScoreTier(medianScore);
+    const medColor   = medTier ? medTier.color : '#4CAF50';
 
     return `
     <div class="homepage-grid">
 
       <!-- SCORE GAUGE -->
-      <div class="card score-card">
+      <div class="card ga-score-card">
         <div class="card-header">
-          <span class="card-title">Fleet Score</span>
-          <button class="card-info-btn" title="Lower score = safer fleet">ℹ️</button>
+          <span class="card-title">Dynasty Communications Score</span>
         </div>
-        <div class="score-summary">
-          <div>
-            <span class="score-label">▶ Current Score</span>
-            <span class="score-value">${Utils.formatNumber(currentScore)}</span>
-            ${Utils.trendBadge(trend)}
+        <div class="ga-score-meta">
+          <div class="ga-meta-row">
+            <span class="ga-meta-label">&#9654; Current Score</span>
+            <span class="ga-meta-num">${Utils.formatNumber(currentScore)}</span>
+            <span class="ga-meta-trend" style="color:${trendColor}">${trendSign}${Math.abs(trend)}% ${trendArrow}</span>
           </div>
-          <div>
-            <span class="score-label">▪ Median Score</span>
-            <span class="score-value">${Utils.formatNumber(medianScore)}</span>
+          <div class="ga-meta-row">
+            <span class="ga-meta-label">&#9642; Company Median Score</span>
+            <span class="ga-meta-num">${Utils.formatNumber(medianScore)}</span>
           </div>
         </div>
-        <canvas id="score-gauge-canvas" width="220" height="130"></canvas>
-        <div class="score-number" style="color:${scoreColor}">${Utils.formatNumber(currentScore)}</div>
-        <div class="score-category" style="border-color:${scoreColor};color:${scoreColor}">${scoreCategory}</div>
-        <div class="score-trend-label">${Math.abs(trend)}% ${trend > 0 ? '↑ vs last period' : '↓ vs last period'}</div>
+        <canvas id="score-gauge-canvas"></canvas>
+        <div class="ga-gauge-num" style="color:${scoreColor}">${Utils.formatNumber(currentScore)}</div>
+        <div class="ga-gauge-cat" style="color:${scoreColor};border-color:${scoreColor}">${scoreCat}</div>
+        <div class="ga-gauge-pct" style="color:${trendColor}">${trendSign}${Math.abs(trend)}% ${trendArrow}</div>
       </div>
 
-      <!-- SCORE TREND CHART -->
-      <div class="card trend-card" id="widget-score-trend">
+      <!-- SCORE TREND -->
+      <div class="card ga-trend-card" id="widget-score-trend">
         <div class="card-header">
-          <span class="card-title">Score Trend</span>
-          <span class="card-subtitle">Last 6 weekly periods</span>
+          <div>
+            <div class="card-title">Dynasty Communications Score Trend</div>
+            <div class="card-subtitle">Throughout the last 6 periods</div>
+          </div>
         </div>
-        <canvas id="trend-chart-canvas" height="180"></canvas>
+        <canvas id="trend-chart-canvas" height="155"></canvas>
       </div>
 
       <!-- GPS OFFLINE -->
-      <div class="card kpi-card" id="widget-gps-offline">
-        <div class="card-header">
-          <span class="card-title">GPS Offline</span>
-          <span class="card-subtitle">5+ days</span>
+      <div class="card ga-kpi-card" id="widget-gps-offline">
+        <div class="ga-kpi-top">
+          <span class="ga-kpi-title">GPS Offline</span>
+          <span class="ga-kpi-sub">5 days or more</span>
         </div>
-        <div class="kpi-value ${gpsOfflineCount > 0 ? 'kpi-alert' : ''}">${gpsOfflineCount}/${totalDevices}</div>
+        <div class="ga-kpi-body">
+          <svg class="ga-kpi-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.686 2 6 4.686 6 8c0 5 6 13 6 13s6-8 6-13c0-3.314-2.686-6-6-6z"/>
+            <circle cx="12" cy="8" r="2.5"/>
+          </svg>
+          <div class="ga-kpi-num ${gpsOfflineCount > 0 ? 'ga-kpi-alert' : ''}">${gpsOfflineCount}/${totalDevices}</div>
+        </div>
       </div>
 
       <!-- CAMERAS OFFLINE -->
-      <div class="card kpi-card" id="widget-cam-offline">
-        <div class="card-header">
-          <span class="card-title">Cameras Offline</span>
-          <span class="card-subtitle">5+ days</span>
+      <div class="card ga-kpi-card" id="widget-cam-offline">
+        <div class="ga-kpi-top">
+          <span class="ga-kpi-title">Cameras Offline</span>
+          <span class="ga-kpi-sub">5 days or more</span>
         </div>
-        <div class="kpi-value ${cameraOfflineCount > 0 ? 'kpi-alert' : ''}">${cameraOfflineCount}/${cameraTotal}</div>
+        <div class="ga-kpi-body">
+          <svg class="ga-kpi-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 7l-7 5 7 5V7z"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+          <div class="ga-kpi-num ${cameraOfflineCount > 0 ? 'ga-kpi-alert' : ''}">${cameraOfflineCount}/${cameraTotal}</div>
+        </div>
       </div>
 
-      <!-- PERFORMANCE TABLE -->
-      <div class="card performance-table-card" id="widget-fleet-perf">
+      <!-- FLEET PERFORMANCE -->
+      <div class="card ga-perf-card" id="widget-fleet-perf">
         <div class="card-header">
-          <span class="card-title">Fleet Performance</span>
-          <span class="card-subtitle">Total unsafe driving points</span>
+          <div>
+            <div class="card-title">Dynasty Communications Performance</div>
+            <div class="card-subtitle">Total unsafe driving points</div>
+          </div>
         </div>
         <div class="table-tabs">
           <button class="tab-btn active" data-tab="groups">Groups (${groupRows.length})</button>
           <button class="tab-btn" data-tab="drivers">Drivers (${driverRows.length})</button>
         </div>
-        <div class="tab-content active" id="tab-groups">
-          ${this.buildPerformanceTable(groupRows, 'GROUP')}
-        </div>
-        <div class="tab-content" id="tab-drivers">
-          ${this.buildPerformanceTable(driverRows, 'DRIVER')}
-        </div>
+        <div class="tab-content active" id="tab-groups">${this.buildPerfTable(groupRows, 'GROUP')}</div>
+        <div class="tab-content" id="tab-drivers">${this.buildPerfTable(driverRows, 'DRIVER')}</div>
       </div>
 
       <!-- INSIGHTS -->
-      <div class="card insights-card" id="widget-insights">
+      <div class="card ga-insights-card" id="widget-insights">
         <div class="card-header">
-          <span class="card-title">Insights</span>
-          <span class="card-subtitle">Rule-based analysis</span>
+          <div>
+            <div class="card-title">Insights</div>
+            <div class="card-subtitle">Rule-based analysis</div>
+          </div>
         </div>
-        <div class="insights-text">
-          ${this.generateInsight(driverRows, topEvents)}
-        </div>
+        <div class="ga-insights-body">${this.generateInsight(driverRows, topEvents)}</div>
       </div>
 
       <!-- COACHING SNAPSHOT -->
-      <div class="card coaching-snapshot-card" id="widget-coaching-snap">
+      <div class="card ga-coaching-card" id="widget-coaching-snap">
         <div class="card-header">
-          <span class="card-title">Coaching Snapshot</span>
-          <span class="card-subtitle">Last 6 periods</span>
+          <div>
+            <div class="card-title">Coaching Snapshot</div>
+            <div class="card-subtitle">Coaching activity throughout the last 6 periods</div>
+          </div>
         </div>
-        <canvas id="coaching-chart-canvas" height="180"></canvas>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot blue"></span>Views</span>
-          <span class="legend-item"><span class="legend-dot green"></span>Sessions</span>
+        <canvas id="coaching-chart-canvas" height="130"></canvas>
+        <div class="chart-legend" style="margin-top:6px">
+          <span class="legend-item"><span class="legend-dot" style="background:#4CAF50"></span>Views</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#1565C0"></span>Coaching Events</span>
         </div>
       </div>
 
       <!-- EVENT PERFORMANCE -->
-      <div class="card event-performance-card" id="widget-event-perf">
+      <div class="card ga-events-card" id="widget-event-perf">
         <div class="card-header">
-          <span class="card-title">Event Performance</span>
-          <span class="card-subtitle">Top exception events vs last period</span>
+          <div>
+            <div class="card-title">Event Performance</div>
+            <div class="card-subtitle">Exception events compared to last period</div>
+          </div>
         </div>
         <table class="data-table">
           <thead>
-            <tr>
-              <th>EVENT</th>
-              <th>COUNT</th>
-              <th>TREND</th>
-            </tr>
+            <tr><th>EVENTS</th><th>AMOUNT</th><th>TREND</th></tr>
           </thead>
           <tbody>
-            ${topEvents.map(evt => `
-              <tr>
+            ${topEvents.map(evt => {
+              const max    = topEvents[0]?.count || 1;
+              const barW   = Math.min(100, Math.round((evt.count / max) * 100));
+              const barCol = evt.count > 100 ? '#F44336'
+                           : evt.count > 50  ? '#FF9800'
+                           : evt.count > 20  ? '#FFC107'
+                           : '#4CAF50';
+              return `<tr>
                 <td>${evt.name}</td>
                 <td>
-                  <div class="event-bar-wrap">
-                    <div class="event-bar"
-                      style="width:${Math.min(100, evt.count)}%;background:${evt.count > 50 ? '#FF6F00' : '#1565C0'}">
-                    </div>
-                    <span>${evt.count}</span>
+                  <div class="ga-event-bar-wrap">
+                    <div class="ga-event-bar" style="width:${barW}%;background:${barCol}"></div>
+                    <span class="ga-event-count">${evt.count}</span>
                   </div>
                 </td>
                 <td>${Utils.trendBadge(evt.trend)}</td>
-              </tr>
-            `).join('')}
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
       </div>
 
-    </div>
-    `;
+    </div>`;
   },
 
-  buildPerformanceTable(rows, labelType) {
+  buildPerfTable(rows, label) {
     return `
       <table class="data-table">
         <thead>
           <tr>
-            <th>${labelType}</th>
-            <th>SCORE</th>
-            <th>TREND</th>
-            <th>COACHING</th>
-            <th>VIEWS</th>
+            <th>${label}</th><th>SCORE</th><th>TREND</th><th>COACHING EVENTS</th><th>VIEWS</th>
           </tr>
         </thead>
         <tbody>
-          ${rows.map(row => `
+          ${rows.map(r => `
             <tr>
-              <td class="link-text">${row.name || '—'}</td>
-              <td>${Utils.scoreBadge(row.score)}</td>
-              <td>${row.score !== null ? Utils.trendBadge(row.trend) : '—'}</td>
-              <td>${row.coaching || 0}</td>
-              <td>${row.views    || 0}</td>
-            </tr>
-          `).join('')}
+              <td class="link-text">${r.name || '—'}</td>
+              <td>${Utils.scoreBadge(r.score)}</td>
+              <td>${r.score !== null ? Utils.trendBadge(r.trend) : '—'}</td>
+              <td>${r.coaching || 0}</td>
+              <td>${r.views || 0}</td>
+            </tr>`).join('')}
         </tbody>
-      </table>
-    `;
+      </table>`;
   },
 
   generateInsight(driverRows, topEvents) {
     const withScores = driverRows.filter(d => d.score !== null);
-    const worst  = [...withScores].sort((a, b) => (b.score||0) - (a.score||0))[0];
+    const worst  = [...withScores].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
     const topEvt = topEvents[0];
-    const highRisk = withScores.filter(d => Utils.getScoreCategory(d.score) === 'High').length;
-    let insight = '';
-
-    if (highRisk > 0) {
-      insight += `<p><strong>${highRisk} driver${highRisk > 1 ? 's' : ''}</strong> are in the high-risk category (score ≥ 5000).</p>`;
-    }
+    let html = '';
     if (worst) {
-      insight += `<p>Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
+      const t = Utils.getScoreTier(worst.score);
+      html += `<p><span style="color:${t ? t.color : '#F44336'}">&#9679;</span> Driver <strong>${worst.name.trim()}</strong> has the highest score: <strong>${Utils.formatNumber(worst.score)}</strong> points.</p>`;
     }
     if (topEvt) {
-      insight += `<p>Most common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
+      html += `<p>Most common event: <strong>${topEvt.name}</strong> — ${topEvt.count} occurrences this period.</p>`;
     }
-    return insight || '<p>✅ No notable safety issues found in this period.</p>';
+    return html || '<p>No notable insights for this period.</p>';
   },
 
   // ============================================================
-  // CHARTS
+  // GAUGE — gradient arc green→yellow→orange→red, fits in card
   // ============================================================
-
   initGaugeChart(canvasId, score) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx     = canvas.getContext('2d');
-    const color   = Utils.getScoreColor(score);
-    const cx      = canvas.width / 2;
-    const cy      = canvas.height - 20;
-    const r       = 100;
+
+    const isDark = document.getElementById('dyn-app')?.classList.contains('dyn-dark');
+    const card   = canvas.closest('.ga-score-card');
+    const W      = card ? card.clientWidth - 32 : 220;
+
+    canvas.width  = W;
+    canvas.height = Math.round(W * 0.55);
+
+    const ctx = canvas.getContext('2d');
+    const cx  = W / 2;
+    const cy  = canvas.height - 12;
+    const r   = Math.round(W * 0.36);
+    const lw  = Math.round(W * 0.07);
+
     const maxScore = 10000;
     const pct      = Math.min(score / maxScore, 1);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, W, canvas.height);
 
-    // Background arc
+    // Track (background)
     ctx.beginPath();
     ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
-    ctx.strokeStyle = '#E0E0E0';
-    ctx.lineWidth   = 20;
+    ctx.strokeStyle = isDark ? '#2D3046' : '#EEEEEE';
+    ctx.lineWidth   = lw;
+    ctx.lineCap     = 'butt';
     ctx.stroke();
 
-    // Colored arc
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, Math.PI, Math.PI + pct * Math.PI);
-    ctx.strokeStyle = color;
-    ctx.lineWidth   = 20;
-    ctx.lineCap     = 'round';
-    ctx.stroke();
+    // Colored segments — green → yellow → orange → red
+    const segs = [
+      [0,    0.10, '#4CAF50'],
+      [0.10, 0.20, '#8BC34A'],
+      [0.20, 0.40, '#FFEB3B'],
+      [0.40, 0.55, '#FF9800'],
+      [0.55, 0.70, '#FF5722'],
+      [0.70, 1.00, '#F44336'],
+    ];
+    segs.forEach(([from, to, col]) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, Math.PI + from * Math.PI, Math.PI + to * Math.PI);
+      ctx.strokeStyle = col;
+      ctx.lineWidth   = lw;
+      ctx.lineCap     = 'butt';
+      ctx.stroke();
+    });
+
+    // Grey overlay for unfilled portion
+    if (pct < 1) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, Math.PI + pct * Math.PI, 2 * Math.PI);
+      ctx.strokeStyle = isDark ? '#2D3046' : '#EEEEEE';
+      ctx.lineWidth   = lw;
+      ctx.lineCap     = 'butt';
+      ctx.stroke();
+    }
 
     // Needle
-    const needleAngle = Math.PI + pct * Math.PI;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + 85 * Math.cos(needleAngle), cy + 85 * Math.sin(needleAngle));
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth   = 3;
-    ctx.stroke();
+    const na  = Math.PI + pct * Math.PI;
+    const nl  = r - lw / 2 - 2;
+    const col = isDark ? '#E8EAF0' : '#424242';
 
-    // Center dot
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(na);
     ctx.beginPath();
-    ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
-    ctx.fillStyle = '#333';
+    ctx.moveTo(nl, 0);
+    ctx.lineTo(-8, -3);
+    ctx.lineTo(-8, 3);
+    ctx.closePath();
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.restore();
+
+    // Hub dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = col;
     ctx.fill();
 
-    // Labels
-    ctx.fillStyle  = '#9E9E9E';
-    ctx.font       = '11px Segoe UI';
-    ctx.fillText('0',       cx - r - 8, cy + 14);
-    ctx.fillText('5000',    cx - 18,    cy - r - 8);
-    ctx.fillText('10000+',  cx + r - 28, cy + 14);
+    // Scale labels
+    const fs = Math.max(10, Math.round(W * 0.036));
+    ctx.fillStyle = isDark ? '#8B90A8' : '#9E9E9E';
+    ctx.font      = `${fs}px Segoe UI, Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText('0', cx - r - lw / 2 - 2, cy + 14);
+    ctx.textAlign = 'center';
+    ctx.fillText('5000', cx, cy - r - lw / 2 - 4);
+    ctx.textAlign = 'right';
+    ctx.fillText('10000+', cx + r + lw / 2 + 2, cy + 14);
   },
 
+  // ============================================================
+  // TREND CHART — bars colored by score tier
+  // ============================================================
   initTrendChart(canvasId, trendScores) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const scores = trendScores.map(p => p.score);
-    const last   = scores.length - 1;
+
+    const isDark    = document.getElementById('dyn-app')?.classList.contains('dyn-dark');
+    const gridColor = isDark ? '#2D3046' : '#F0F0F0';
+    const tickColor = isDark ? '#8B90A8' : '#666666';
+    const scores    = trendScores.map(p => p.score);
+
+    const barColor = v => {
+      if (v > 5000)  return '#F44336';
+      if (v >= 2000) return '#FF9800';
+      if (v >= 1000) return '#FFEB3B';
+      return '#4CAF50';
+    };
 
     new Chart(canvas, {
       type: 'bar',
@@ -426,68 +449,80 @@ const HomepagePage = {
         labels:   trendScores.map(p => p.label),
         datasets: [{
           data:            scores,
-          backgroundColor: scores.map((v, i) =>
-            i === last ? '#FF6F00' : '#FFAB66'
-          ),
-          borderRadius: 4
-        }]
+          backgroundColor: scores.map(v => barColor(v)),
+          borderRadius:    3,
+        }],
       },
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
-          x: { grid: { display: false } }
-        }
-      }
+          y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor, maxTicksLimit: 6 } },
+          x: { grid: { display: false }, ticks: { color: tickColor } },
+        },
+      },
     });
   },
 
+  // ============================================================
+  // COACHING CHART
+  // ============================================================
   initCoachingChart(canvasId, coachingByPeriod) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+
+    const isDark    = document.getElementById('dyn-app')?.classList.contains('dyn-dark');
+    const tickColor = isDark ? '#8B90A8' : '#666666';
+
     new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: coachingByPeriod.map(p => p.label),
+        labels:   coachingByPeriod.map(p => p.label),
         datasets: [
-          {
-            label:           'Views',
-            data:            coachingByPeriod.map(p => p.views),
-            backgroundColor: '#1565C0',
-            borderRadius:    3
-          },
-          {
-            label:           'Sessions',
-            data:            coachingByPeriod.map(p => p.events),
-            backgroundColor: '#8BC34A',
-            borderRadius:    3
-          }
-        ]
+          { label: 'Views',           data: coachingByPeriod.map(p => p.views),  backgroundColor: '#4CAF50', borderRadius: 3 },
+          { label: 'Coaching Events', data: coachingByPeriod.map(p => p.events), backgroundColor: '#1565C0', borderRadius: 3 },
+        ],
       },
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true },
-          x: { grid: { display: false } }
-        }
-      }
+          y: { beginAtZero: true, ticks: { color: tickColor, maxTicksLimit: 5 } },
+          x: { grid: { display: false }, ticks: { color: tickColor } },
+        },
+      },
     });
   },
 
   setupTableTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const tab = btn.getAttribute('data-tab');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const tab    = btn.getAttribute('data-tab');
+        const parent = btn.closest('.card');
+        if (!parent) return;
+        parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-        const tc = document.getElementById('tab-' + tab);
+        parent.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        const tc = parent.querySelector('#tab-' + tab);
         if (tc) tc.classList.add('active');
       });
     });
-  }
+  },
+
+  applyWidgetVisibility(s) {
+    [
+      ['scoreTrend',       '#widget-score-trend'],
+      ['gpsOffline',       '#widget-gps-offline'],
+      ['cameraOffline',    '#widget-cam-offline'],
+      ['fleetPerformance', '#widget-fleet-perf'],
+      ['insights',         '#widget-insights'],
+      ['coachingSnapshot', '#widget-coaching-snap'],
+      ['eventPerformance', '#widget-event-perf'],
+    ].forEach(([key, sel]) => {
+      const el = document.querySelector(sel);
+      if (el) el.style.display = s[key] !== false ? '' : 'none';
+    });
+  },
 };
 
 window.HomepagePage = HomepagePage;

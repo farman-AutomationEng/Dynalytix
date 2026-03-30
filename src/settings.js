@@ -305,15 +305,19 @@ const SettingsPage = {
    */
   async _loadSettings(api) {
     try {
+      // AddInData search - try without keys filter first for compatibility
       const results = await api.call('Get', {
         typeName: 'AddInData',
-        search:   { addInId: 'dynalytix', keys: [this.STORAGE_KEY] }
+        search:   { addInId: 'Dynalytix' }
       });
 
-      if (results && results.length > 0 && results[0].value) {
-        const parsed = JSON.parse(results[0].value);
-        // Merge with defaults so new widgets appear enabled by default
-        return { ...this.DEFAULTS, ...parsed };
+      if (results && results.length > 0) {
+        // Find our specific key
+        const record = results.find(r => r.key === this.STORAGE_KEY);
+        if (record && record.value) {
+          const parsed = JSON.parse(record.value);
+          return { ...this.DEFAULTS, ...parsed };
+        }
       }
     } catch (err) {
       console.warn('[Settings] Could not load settings from AddInData:', err.message);
@@ -333,20 +337,22 @@ const SettingsPage = {
       // Check if record already exists
       const existing = await api.call('Get', {
         typeName: 'AddInData',
-        search:   { addInId: 'dynalytix', keys: [this.STORAGE_KEY] }
+        search:   { addInId: 'Dynalytix' }
       });
 
-      if (existing && existing.length > 0) {
+      const record = existing ? existing.find(r => r.key === this.STORAGE_KEY) : null;
+
+      if (record) {
         // Update existing record
         await api.call('Set', {
           typeName: 'AddInData',
-          entity:   { id: existing[0].id, addInId: 'dynalytix', key: this.STORAGE_KEY, value }
+          entity:   { id: record.id, addInId: 'Dynalytix', key: this.STORAGE_KEY, value }
         });
       } else {
         // Create new record
         await api.call('Add', {
           typeName: 'AddInData',
-          entity:   { addInId: 'dynalytix', key: this.STORAGE_KEY, value }
+          entity:   { addInId: 'Dynalytix', key: this.STORAGE_KEY, value }
         });
       }
 

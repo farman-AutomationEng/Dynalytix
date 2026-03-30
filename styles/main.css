@@ -752,3 +752,52 @@ html, body {
   vertical-align: top;
 }
 .se-zero { color: var(--text-secondary); text-align: center; }
+
+/* ============================================================
+   DARK MODE — applied when #dyn-app has .dyn-dark class
+   ============================================================ */
+.dyn-dark {
+  --bg:             #0F1117;
+  --card-bg:        #1A1D27;
+  --border:         #2D3046;
+  --text-primary:   #E8EAF0;
+  --text-secondary: #8B90A8;
+  --primary:        #5B8DEF;
+  --primary-light:  #7AA5F5;
+  --green:          #4ADE80;
+  --red:            #F87171;
+  --orange:         #FB923C;
+  --shadow:         0 2px 8px rgba(0,0,0,0.4);
+}
+
+.dyn-dark .dyn-sidebar         { background: #13151F; border-color: #2D3046; }
+.dyn-dark .dyn-topbar          { background: #13151F; border-color: #2D3046; }
+.dyn-dark .card                { background: #1A1D27; border-color: #2D3046; }
+.dyn-dark .dyn-nav-item:hover  { background: #222638; }
+.dyn-dark .dyn-nav-item.dyn-active { background: #1e2d5a; }
+.dyn-dark .data-table th       { color: #8B90A8; border-color: #2D3046; }
+.dyn-dark .data-table td       { border-color: #2D3046; }
+.dyn-dark .data-table tr:hover { background: #22263A; }
+.dyn-dark .dyn-period-select   { background: #1A1D27; color: #E8EAF0; border-color: #2D3046; }
+.dyn-dark .dyn-btn-export      { background: #1A1D27; color: #E8EAF0; border-color: #2D3046; }
+.dyn-dark .btn-export-csv      { background: #1A1D27; color: #E8EAF0; border-color: #2D3046; }
+.dyn-dark .tab-btn             { color: #8B90A8; }
+.dyn-dark .tab-btn.active      { color: var(--primary); }
+.dyn-dark .search-input        { background: #1A1D27; color: #E8EAF0; border-color: #2D3046; }
+.dyn-dark .search-input:focus  { border-color: var(--primary); }
+.dyn-dark .settings-widget-card { background: #22263A; border-color: #2D3046; }
+.dyn-dark .settings-widget-card.settings-widget-on { background: #1e2d5a; border-color: #3d5a9e; }
+.dyn-dark .settings-section    { background: #1A1D27; }
+.dyn-dark .settings-header-card { background: #1A1D27; }
+.dyn-dark .settings-btn-secondary { background: #22263A; color: #E8EAF0; border-color: #2D3046; }
+.dyn-dark .score-badge.neutral { background: #22263A; color: #8B90A8; }
+.dyn-dark .se-summary-bar      { background: #1A1D27; border-color: #2D3046; }
+.dyn-dark .se-filter-btn       { background: #1A1D27; color: #8B90A8; border-color: #2D3046; }
+.dyn-dark .dyn-sidebar-logo    { border-color: #2D3046; }
+.dyn-dark .dyn-sidebar-footer  { border-color: #2D3046; }
+.dyn-dark .dyn-sidebar-nav .dyn-nav-section { color: #5A5F7A; }
+.dyn-dark .link-text           { color: var(--primary); }
+.dyn-dark .sc-col-sticky       { background: #1A1D27; }
+.dyn-dark .se-sticky-col       { background: #1A1D27; }
+.dyn-dark .data-table tbody tr:hover .sc-col-sticky,
+.dyn-dark .se-main-table tbody tr:hover .se-sticky-col { background: #22263A; }

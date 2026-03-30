@@ -43,7 +43,6 @@ const SettingsPage = {
       const isOn = w.required ? true : (s[w.id] !== false);
       return `
         <div class="settings-widget-card ${isOn ? 'settings-widget-on' : 'settings-widget-off'}">
-          <div class="settings-widget-icon">${w.icon}</div>
           <div class="settings-widget-info">
             <div class="settings-widget-label">
               ${w.label}
@@ -79,7 +78,6 @@ const SettingsPage = {
             <span class="card-title">Appearance</span>
           </div>
           <div class="settings-widget-card ${darkOn ? 'settings-widget-on' : 'settings-widget-off'}" style="margin-top:8px">
-            <div class="settings-widget-icon">🌙</div>
             <div class="settings-widget-info">
               <div class="settings-widget-label">Dark Mode</div>
               <div class="settings-widget-desc">Switch the entire dashboard to a dark color scheme.</div>
@@ -105,7 +103,7 @@ const SettingsPage = {
 
         <div class="settings-footer">
           <div class="settings-save-status" id="save-status"></div>
-          <button class="settings-btn-primary" id="btn-save-settings">💾 Save Settings</button>
+          <button class="settings-btn-primary" id="btn-save-settings">Save Settings</button>
           <button class="settings-btn-secondary" id="btn-reset-defaults">Reset to Defaults</button>
         </div>
 
@@ -154,7 +152,7 @@ const SettingsPage = {
     if (saveBtn) {
       saveBtn.addEventListener('click', async () => {
         saveBtn.disabled = true;
-        saveBtn.textContent = '⏳ Saving...';
+        saveBtn.textContent = 'Saving...';
         const newSettings = this._collect(container);
         const { ok, method } = await this._save(api, newSettings);
         this._settings = newSettings;
@@ -164,7 +162,7 @@ const SettingsPage = {
           ok ? 'settings-status-saved' : 'settings-status-error'
         );
         saveBtn.disabled = false;
-        saveBtn.textContent = '💾 Save Settings';
+        saveBtn.textContent = 'Save Settings';
       });
     }
 

@@ -289,41 +289,82 @@ html, body {
 .btn-expand:hover, .btn-refresh:hover { background: var(--bg); }
 
 /* ============================================================
-   HOMEPAGE GRID — GoAnalytics layout:
-   Row 1: [Score] [Score Trend        ] [GPS Offline] [Camera Offline]
-   Row 2: [Fleet Performance Table    ] [Insights   ] [Insights      ]
-   Row 3: [Fleet Performance Table    ] [Coaching Snapshot            ]
-   Row 4: [Event Performance — full width                             ]
+   HOMEPAGE GRID — GoAnalytics v3.9.7 exact layout
+   Row 1: [Score Gauge] [Score Trend — large    ] [GPS ] [Camera]
+   Row 2: [Fleet Perf Table — spans 2 rows      ] [Insights     ]
+   Row 3: [Fleet Perf Table — spans 2 rows      ] [Coaching Snap]
+   Row 4: [Event Performance — full width                        ]
    ============================================================ */
 .homepage-grid {
   display: grid;
-  grid-template-columns: 220px 1fr 155px 155px;
+  grid-template-columns: 230px 1fr 160px 160px;
   gap: 14px;
   align-items: start;
 }
 
-/* Row 1 */
-.score-card             { grid-column: 1;     grid-row: 1; text-align: center; }
-.trend-card             { grid-column: 2;     grid-row: 1; }
-/* kpi-cards auto-placed into col 3 and col 4, row 1 */
-.kpi-card               { grid-row: 1; }
+.ga-score-card   { grid-column: 1; grid-row: 1; }
+.ga-trend-card   { grid-column: 2; grid-row: 1; }
+.ga-kpi-card     { grid-row: 1; } /* auto-placed cols 3,4 */
+.ga-perf-card    { grid-column: 1 / 3; grid-row: 2 / 4; }
+.ga-insights-card  { grid-column: 3 / 5; grid-row: 2; }
+.ga-coaching-card  { grid-column: 3 / 5; grid-row: 3; }
+.ga-events-card    { grid-column: 1 / 5; grid-row: 4; }
 
-/* Row 2–3 — Fleet Performance spans 2 rows, cols 1–2 */
-.performance-table-card { grid-column: 1 / 3; grid-row: 2 / 4; }
+/* ---- Score Gauge Card ---- */
+.ga-score-card { text-align: center; padding: 14px 12px; }
+.ga-score-card .card-title { font-size: 13px; text-align: left; }
 
-/* Row 2 — Insights spans cols 3–4 */
-.insights-card          { grid-column: 3 / 5; grid-row: 2; }
+.ga-score-meta  { text-align: left; margin: 8px 0; }
+.ga-meta-row    { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 2px 0; }
+.ga-meta-label  { color: var(--text-secondary); flex: 1; font-size: 11px; }
+.ga-meta-num    { font-weight: 700; font-size: 13px; }
+.ga-meta-trend  { font-size: 11px; font-weight: 600; }
 
-/* Row 3 — Coaching Snapshot spans cols 3–4 */
-.coaching-snapshot-card { grid-column: 3 / 5; grid-row: 3; }
+.ga-gauge-num   { font-size: 32px; font-weight: 800; margin-top: -8px; }
+.ga-gauge-cat   {
+  display: inline-block; border: 1.5px solid;
+  padding: 1px 12px; border-radius: 4px;
+  font-weight: 600; font-size: 12px; margin: 4px 0;
+}
+.ga-gauge-pct   { font-size: 12px; font-weight: 600; margin-top: 2px; }
 
-/* Row 4 — Event Performance full width */
-.event-performance-card { grid-column: 1 / 5; grid-row: 4; }
+/* ---- Trend Card ---- */
+.ga-trend-card  { padding: 14px 16px; }
+
+/* ---- KPI Cards (GPS/Camera) ---- */
+.ga-kpi-card    { padding: 14px 16px; }
+.ga-kpi-top     { margin-bottom: 10px; }
+.ga-kpi-title   { font-weight: 700; font-size: 14px; color: var(--text-primary); display: block; }
+.ga-kpi-sub     { font-size: 11px; color: var(--text-secondary); }
+.ga-kpi-body    { display: flex; align-items: center; gap: 12px; }
+.ga-kpi-svg     { width: 28px; height: 28px; color: var(--text-secondary); flex-shrink: 0; }
+.ga-kpi-num     { font-size: 34px; font-weight: 800; color: var(--primary); line-height: 1; }
+.ga-kpi-alert   { color: var(--red) !important; }
+
+/* ---- Performance Table Card ---- */
+.ga-perf-card   { padding: 14px 16px; }
+
+/* ---- Insights Card ---- */
+.ga-insights-card  { padding: 14px 16px; }
+.ga-insights-body  { font-size: 13px; line-height: 1.7; color: var(--text-primary); }
+.ga-insights-body p { margin-bottom: 8px; }
+
+/* ---- Coaching Card ---- */
+.ga-coaching-card { padding: 14px 16px; }
+
+/* ---- Event Performance Card ---- */
+.ga-events-card   { padding: 14px 16px; }
+.ga-event-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.ga-event-bar      { height: 16px; border-radius: 2px; min-width: 4px; transition: width 0.3s; }
+.ga-event-count    { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
 
 @media (max-width: 1100px) {
-  .homepage-grid { grid-template-columns: 1fr 1fr; }
-  .score-card, .trend-card, .kpi-card, .performance-table-card,
-  .insights-card, .coaching-snapshot-card, .event-performance-card {
+  .homepage-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ga-score-card, .ga-trend-card, .ga-kpi-card,
+  .ga-perf-card, .ga-insights-card,
+  .ga-coaching-card, .ga-events-card {
     grid-column: span 1 !important;
     grid-row: auto !important;
   }
@@ -863,3 +904,5 @@ html, body {
 .dyn-dark ::-webkit-scrollbar-track { background: #13151F; }
 .dyn-dark ::-webkit-scrollbar-thumb { background: #3D4060; }
 .dyn-dark ::-webkit-scrollbar-thumb:hover { background: #5A5F8A; }
+
+.score-card { text-align: center; }

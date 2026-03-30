@@ -157,7 +157,6 @@ const LeaderboardPage = {
         </div>
         <div class="spotlight-name link-text">${mostImproved?.name || '-'}</div>
         <div class="spotlight-group">${mostImproved?.vehicleName || ''}</div>
-        <div class="spotlight-icons">🏆</div>
         <div class="spotlight-score">${Utils.formatNumber(mostImproved?.score)}</div>
         <div>${mostImproved ? Utils.trendBadge(mostImproved.trend) : ''}</div>
       </div>
@@ -170,7 +169,6 @@ const LeaderboardPage = {
         </div>
         <div class="spotlight-name link-text">${lowestTrend?.name || '-'}</div>
         <div class="spotlight-group">${lowestTrend?.vehicleName || ''}</div>
-        <div class="spotlight-icons">⚠️</div>
         <div class="spotlight-score alert-score">${Utils.formatNumber(lowestTrend?.score)}</div>
         <div>${lowestTrend ? Utils.trendBadge(lowestTrend.trend) : ''}</div>
       </div>

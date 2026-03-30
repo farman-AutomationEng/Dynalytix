@@ -14,7 +14,20 @@
 
 const HomepagePage = {
 
-  async render(container, { api, fromDate, toDate, period, groupIds }) {
+  async render(container, { api, fromDate, toDate, period, groupIds, settings }) {
+
+    // Resolve active widget settings (fall back to all-on if none saved)
+    const S = settings || window.DynSettings || {};
+    const show = {
+      fleetScore:       true,                              // always on
+      scoreTrend:       S.scoreTrend       !== false,
+      gpsOffline:       S.gpsOffline       !== false,
+      cameraOffline:    S.cameraOffline    !== false,
+      fleetPerformance: S.fleetPerformance !== false,
+      insights:         S.insights         !== false,
+      coachingSnapshot: S.coachingSnapshot !== false,
+      eventPerformance: S.eventPerformance !== false,
+    };
 
     // ---- PARALLEL FETCH ----
     const [
@@ -123,7 +136,7 @@ const HomepagePage = {
     });
 
     // ---- RENDER ----
-    container.innerHTML = this.buildHTML({
+    container.innerHTML = this.buildHTML({ show,
       currentScore, prevScore, trend, medianScore,
       gpsOfflineCount, totalDevices,
       cameraOfflineCount, cameraTotal: cameraDevices.length || totalDevices,
@@ -141,6 +154,7 @@ const HomepagePage = {
   // ============================================================
 
   buildHTML(data) {
+    const show = data.show || {};
     const {
       currentScore, trend, medianScore,
       gpsOfflineCount, totalDevices,
@@ -183,8 +197,8 @@ const HomepagePage = {
           <span class="card-title">Score Trend</span>
           <span class="card-subtitle">Last 6 weekly periods</span>
         </div>
-        <canvas id="trend-chart-canvas" height="200"></canvas>
-      </div>
+        <canvas id="trend-chart-canvas" height="140"></canvas>
+      </div>`}
 
       <!-- GPS OFFLINE -->
       <div class="card kpi-card">
@@ -194,7 +208,7 @@ const HomepagePage = {
         </div>
         <div class="kpi-icon">📡</div>
         <div class="kpi-value ${gpsOfflineCount > 0 ? 'kpi-alert' : ''}">${gpsOfflineCount}/${totalDevices}</div>
-      </div>
+      </div>`}
 
       <!-- CAMERAS OFFLINE -->
       <div class="card kpi-card">
@@ -204,7 +218,7 @@ const HomepagePage = {
         </div>
         <div class="kpi-icon">📷</div>
         <div class="kpi-value ${cameraOfflineCount > 0 ? 'kpi-alert' : ''}">${cameraOfflineCount}/${cameraTotal}</div>
-      </div>
+      </div>`}
 
       <!-- PERFORMANCE TABLE -->
       <div class="card performance-table-card">
@@ -241,7 +255,7 @@ const HomepagePage = {
           <span class="card-title">Coaching Snapshot</span>
           <span class="card-subtitle">Last 6 periods</span>
         </div>
-        <canvas id="coaching-chart-canvas" height="150"></canvas>
+        <canvas id="coaching-chart-canvas" height="120"></canvas>
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot blue"></span>Views</span>
           <span class="legend-item"><span class="legend-dot green"></span>Sessions</span>
@@ -281,6 +295,7 @@ const HomepagePage = {
         </table>
       </div>
 
+    `}
     </div>
     `;
   },

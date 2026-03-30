@@ -673,3 +673,82 @@ html, body {
 .settings-status-unsaved { color: var(--orange); }
 .settings-status-saved   { color: var(--green); }
 .settings-status-error   { color: var(--red); }
+
+/* ============================================================
+   COMPLIANCE — ASSET STATUS TABLE
+   ============================================================ */
+.comp-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.comp-kpi-card       { text-align: center; padding: 16px 12px; }
+.comp-kpi-card.comp-kpi-alert { border-color: #FFCCBC; background: #FFF8F6; }
+.comp-kpi-icon       { font-size: 24px; margin-bottom: 6px; }
+.comp-kpi-value      { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+.comp-kpi-label      { font-size: 11px; color: var(--text-secondary); font-weight: 600;
+                       text-transform: uppercase; margin-top: 4px; }
+
+/* Status badges */
+.status-badge        { display: inline-block; padding: 2px 8px; border-radius: 10px;
+                       font-size: 11px; font-weight: 600; white-space: nowrap; }
+.status-online       { background: #C6F6D5; color: #276749; }
+.status-offline      { background: #FED7D7; color: #C53030; }
+.status-has-cam      { background: #EBF8FF; color: #2B6CB0; }
+.status-no-cam       { background: #F5F5F5; color: #9E9E9E; }
+
+.comp-date           { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+.comp-na             { color: var(--text-secondary); font-size: 12px; }
+
+.comp-asset-table th,
+.comp-asset-table td { white-space: nowrap; }
+
+/* ============================================================
+   SCORED EVENTS — NEW DESIGN
+   ============================================================ */
+.scored-events-page  { display: flex; flex-direction: column; gap: 16px; }
+
+.se-summary-bar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 10px 16px;
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.se-summary-item     { color: var(--text-secondary); }
+.se-summary-item strong { color: var(--text-primary); }
+
+/* Filter tabs */
+.se-filter-tabs      { display: flex; gap: 8px; flex-wrap: wrap; }
+.se-filter-btn {
+  padding: 6px 16px; border-radius: 20px;
+  border: 1px solid var(--border); background: #fff;
+  cursor: pointer; font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.se-filter-btn:hover        { border-color: var(--primary); color: var(--primary); }
+.se-filter-btn.se-filter-active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* Sticky first column in scored events table */
+.se-sticky-col {
+  position: sticky; left: 0;
+  background: var(--card-bg);
+  z-index: 2;
+  border-right: 1px solid var(--border);
+}
+.se-main-table tbody tr:hover .se-sticky-col { background: #FAFAFA; }
+
+/* Rule column headers — compact */
+.se-col-rule {
+  font-size: 9px !important;
+  min-width: 90px;
+  max-width: 120px;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: top;
+}
+.se-zero { color: var(--text-secondary); text-align: center; }

@@ -324,19 +324,105 @@ const Utils = {
   // DATE HELPERS
   // ==========================================================
 
+  /**
+   * Convert a period string to { fromDate, toDate }.
+   * Supports all standard Geotab date ranges plus Year-to-Date.
+   *
+   * @param {string} period - period key from the period selector dropdown
+   * @returns {{ fromDate: Date, toDate: Date }}
+   */
   getPeriodDates(period) {
-    const toDate = new Date();
-    toDate.setHours(23, 59, 59, 999);
-    const fromDate = new Date();
-    fromDate.setHours(0, 0, 0, 0);
+    const now  = new Date();
+    const to   = new Date(now);
+    to.setHours(23, 59, 59, 999);
+
+    const from = new Date(now);
+    from.setHours(0, 0, 0, 0);
+
     switch (period) {
-      case '7days':  fromDate.setDate(fromDate.getDate() - 7);  break;
-      case '14days': fromDate.setDate(fromDate.getDate() - 14); break;
-      case '30days': fromDate.setDate(fromDate.getDate() - 30); break;
-      case '90days': fromDate.setDate(fromDate.getDate() - 90); break;
-      default:       fromDate.setDate(fromDate.getDate() - 7);
+      // ---- Rolling windows ----
+      case 'today':
+        // from = today 00:00, to = today 23:59
+        break;
+      case 'yesterday':
+        from.setDate(from.getDate() - 1);
+        to.setDate(to.getDate() - 1);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case '7days':
+        from.setDate(from.getDate() - 7);
+        break;
+      case '14days':
+        from.setDate(from.getDate() - 14);
+        break;
+      case '30days':
+        from.setDate(from.getDate() - 30);
+        break;
+      case '60days':
+        from.setDate(from.getDate() - 60);
+        break;
+      case '90days':
+        from.setDate(from.getDate() - 90);
+        break;
+      case '6months':
+        from.setMonth(from.getMonth() - 6);
+        break;
+
+      // ---- Calendar-based ----
+      case 'thisWeek': {
+        // Monday of current week → today
+        const day = from.getDay(); // 0=Sun, 1=Mon...
+        const diff = (day === 0) ? -6 : 1 - day;
+        from.setDate(from.getDate() + diff);
+        break;
+      }
+      case 'lastWeek': {
+        const day = from.getDay();
+        const diff = (day === 0) ? -6 : 1 - day;
+        // Start of last week
+        from.setDate(from.getDate() + diff - 7);
+        // End of last week (Sunday)
+        to.setDate(from.getDate() + 6);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case 'thisMonth':
+        from.setDate(1);
+        break;
+      case 'lastMonth':
+        from.setDate(1);
+        from.setMonth(from.getMonth() - 1);
+        to.setDate(0); // Last day of previous month
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'thisQuarter': {
+        const q = Math.floor(now.getMonth() / 3);
+        from.setMonth(q * 3, 1);
+        break;
+      }
+      case 'lastQuarter': {
+        const q = Math.floor(now.getMonth() / 3);
+        const lqStart = new Date(now.getFullYear(), (q - 1) * 3, 1);
+        from.setFullYear(lqStart.getFullYear(), lqStart.getMonth(), 1);
+        to.setFullYear(lqStart.getFullYear(), lqStart.getMonth() + 3, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      }
+      case 'ytd':
+        // Year-to-date: Jan 1 of current year → today
+        from.setMonth(0, 1);
+        break;
+      case 'lastYear':
+        from.setFullYear(from.getFullYear() - 1, 0, 1);
+        to.setFullYear(to.getFullYear() - 1, 11, 31);
+        to.setHours(23, 59, 59, 999);
+        break;
+
+      default:
+        from.setDate(from.getDate() - 7);
     }
-    return { fromDate, toDate };
+
+    return { fromDate: from, toDate: to };
   },
 
   getLast6Periods() {

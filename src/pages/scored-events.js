@@ -147,7 +147,7 @@ const ScoredEventsPage = {
       const bgAlert     = isHighAlert ? 'kpi-event-card alert' : 'kpi-event-card';
       return `
         <div class="card ${bgAlert}">
-          <div class="kpi-event-label">${r.isCamera ? '📷 ' : ''}${r.name}</div>
+          <div class="kpi-event-label">${r.isCamera ? '[CAM] ' : ''}${r.name}</div>
           <div class="kpi-event-count">${count}</div>
           ${count > 0 || prev > 0
             ? `<div class="kpi-event-trend">${Utils.trendBadge(trend)}</div>`
@@ -171,7 +171,7 @@ const ScoredEventsPage = {
 
     const colHeaders = tableRules.map((r, i) =>
       `<th class="se-col-rule" data-col="${i + 2}" title="${r.name}">
-        ${r.isCamera ? '📷 ' : ''}${r.name.toUpperCase()} ↕
+        ${r.isCamera ? '[CAM] ' : ''}${r.name.toUpperCase()} ↕
       </th>`
     ).join('');
 
@@ -207,7 +207,7 @@ const ScoredEventsPage = {
             <strong>${telematicsCount}</strong> telematics rules
           </span>
           <span class="se-summary-item" style="color:var(--primary)">
-            <strong>📷 ${cameraCount}</strong> camera AI rules
+            <strong>${cameraCount}</strong> camera AI rules
           </span>
         </div>
 
@@ -220,7 +220,7 @@ const ScoredEventsPage = {
             📍 Telematics (${telematicsCount})
           </button>
           <button class="se-filter-btn" data-filter="camera">
-            📷 Camera AI (${cameraCount})
+            Camera AI (${cameraCount})
           </button>
         </div>
 
@@ -333,7 +333,7 @@ const ScoredEventsPage = {
         if (tilesGrid) {
           tilesGrid.querySelectorAll('.kpi-event-card').forEach(tile => {
             const label = tile.querySelector('.kpi-event-label')?.textContent || '';
-            const isCam = label.includes('📷');
+            const isCam = label.includes('[CAM]');
             if (filter === 'all') {
               tile.style.display = '';
             } else if (filter === 'camera') {
@@ -348,7 +348,7 @@ const ScoredEventsPage = {
         const table = document.getElementById('se-table');
         if (table) {
           table.querySelectorAll('thead th.se-col-rule').forEach((th, i) => {
-            const isCamera = th.textContent.includes('📷');
+            const isCamera = th.textContent.includes('[CAM]');
             const visible  = filter === 'all'
               || (filter === 'camera' && isCamera)
               || (filter === 'telematics' && !isCamera);

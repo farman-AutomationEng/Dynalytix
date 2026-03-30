@@ -203,32 +203,26 @@ const CompliancePage = {
     const kpiCards = `
       <div class="comp-kpi-row">
         <div class="card comp-kpi-card">
-          <div class="comp-kpi-icon">🚗</div>
           <div class="comp-kpi-value">${totalAssets}</div>
           <div class="comp-kpi-label">Total Assets</div>
         </div>
         <div class="card comp-kpi-card">
-          <div class="comp-kpi-icon" style="color:var(--green)">📡</div>
           <div class="comp-kpi-value" style="color:var(--green)">${gpsOnline}</div>
           <div class="comp-kpi-label">GPS Online</div>
         </div>
         <div class="card comp-kpi-card ${gpsOffline5 > 0 ? 'comp-kpi-alert' : ''}">
-          <div class="comp-kpi-icon" style="color:var(--red)">📡</div>
           <div class="comp-kpi-value" style="color:${gpsOffline5 > 0 ? 'var(--red)' : 'inherit'}">${gpsOffline5}</div>
           <div class="comp-kpi-label">GPS Offline 5+ Days</div>
         </div>
         <div class="card comp-kpi-card">
-          <div class="comp-kpi-icon" style="color:var(--green)">📷</div>
           <div class="comp-kpi-value" style="color:var(--green)">${camOnline}/${totalCams}</div>
           <div class="comp-kpi-label">Cameras Online</div>
         </div>
         <div class="card comp-kpi-card ${camOffline5 > 0 ? 'comp-kpi-alert' : ''}">
-          <div class="comp-kpi-icon" style="color:var(--red)">📷</div>
           <div class="comp-kpi-value" style="color:${camOffline5 > 0 ? 'var(--red)' : 'inherit'}">${camOffline5}</div>
           <div class="comp-kpi-label">Cameras Offline 5+ Days</div>
         </div>
         <div class="card comp-kpi-card ${camHealthWarn > 0 ? 'comp-kpi-alert' : ''}">
-          <div class="comp-kpi-icon">💾</div>
           <div class="comp-kpi-value" style="color:${camHealthWarn > 0 ? 'var(--orange)' : 'inherit'}">${camHealthWarn}</div>
           <div class="comp-kpi-label">SD Card Warnings</div>
         </div>
@@ -357,7 +351,7 @@ const CompliancePage = {
       : `<span class="status-badge status-offline">● Offline${row.gpsDaysOffline !== null ? ' ' + row.gpsDaysOffline + 'd' : ''}</span>`;
 
     const camCell = row.hasCam
-      ? '<span class="status-badge status-has-cam">📷 Yes</span>'
+      ? '<span class="status-badge status-has-cam">Yes</span>'
       : '<span class="status-badge status-no-cam">— None</span>';
 
     const camStatusCell = row.hasCam
@@ -412,7 +406,7 @@ const CompliancePage = {
       : '<span class="comp-na">—</span>';
 
     const camCell = row.hasCam
-      ? '<span class="status-badge status-has-cam">📷</span>'
+      ? '<span class="status-badge status-has-cam">Cam</span>'
       : '<span class="comp-na">—</span>';
 
     return `<tr data-idx="${idx}">

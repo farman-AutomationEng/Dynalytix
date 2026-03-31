@@ -374,7 +374,6 @@ geotab.addin.dynalytix = function() {
         });
 
         vueApp.component('DynLoading',      DynLoading);
-        vueApp.component('DynEditableGrid', window.DynEditableGrid || {});
         vueApp.component('DynError',   DynError);
 
         vueApp.mount('#dyn-app');

@@ -33,6 +33,9 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  /* Prevent zoom from breaking layout */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ============================================================
@@ -47,6 +50,8 @@ html, body {
   font-size: 14px;
   color: #212121;
   background: #F5F7FA;
+  /* Support browser zoom */
+  min-width: 600px;
 }
 
 /* ============================================================
@@ -113,17 +118,33 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  padding: 3px 5px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
-  color: var(--text-secondary);
   flex-shrink: 0;
   transition: opacity 0.2s, background 0.15s;
+  padding: 0;
 }
-.dyn-pin-btn:hover  { background: var(--bg); color: var(--primary); }
-.dyn-pin-btn.dyn-pinned { color: var(--primary); }
 
-/* Hide text/pin when collapsed and not hovered */
+/* Pin SVG icon */
+.dyn-pin-btn::before {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 14px;
+  background: var(--text-secondary);
+  /* Pushpin shape via clip-path */
+  clip-path: polygon(50% 0%, 65% 25%, 100% 30%, 75% 55%, 80% 100%, 50% 80%, 20% 100%, 25% 55%, 0% 30%, 35% 25%);
+  transition: background 0.15s;
+}
+.dyn-pin-btn:hover::before { background: var(--primary); }
+.dyn-pin-btn.dyn-pinned::before { background: var(--primary); }
+.dyn-pin-btn:hover  { background: var(--bg); }
+
+/* Show pin btn only when sidebar is visible */
 .dyn-sidebar.dyn-collapsed:not(:hover) .dyn-logo-text,
 .dyn-sidebar.dyn-collapsed:not(:hover) .dyn-pin-btn {
   opacity: 0;
@@ -198,6 +219,8 @@ html, body {
   height: 100vh;
   overflow: hidden;
   min-width: 0;
+  /* Smooth resize transition */
+  transition: none;
 }
 
 /* ============================================================
@@ -239,7 +262,8 @@ html, body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto; /* allow horizontal scroll when window is narrow */
+  min-width: 0;
 }
 
 /* ============================================================
@@ -297,18 +321,26 @@ html, body {
    ============================================================ */
 .homepage-grid {
   display: grid;
-  grid-template-columns: 230px 1fr 160px 160px;
-  gap: 14px;
+  grid-template-columns: 240px 1fr 170px 170px;
+  grid-template-rows: auto auto auto auto;
+  gap: 12px;
   align-items: start;
+  min-width: 0;
 }
 
-.ga-score-card   { grid-column: 1; grid-row: 1; }
-.ga-trend-card   { grid-column: 2; grid-row: 1; }
-.ga-kpi-card     { grid-row: 1; } /* auto-placed cols 3,4 */
-.ga-perf-card    { grid-column: 1 / 3; grid-row: 2 / 4; }
-.ga-insights-card  { grid-column: 3 / 5; grid-row: 2; }
-.ga-coaching-card  { grid-column: 3 / 5; grid-row: 3; }
-.ga-events-card    { grid-column: 1 / 5; grid-row: 4; }
+/* Row 1: Score | Trend | GPS | Camera */
+.ga-score-card    { grid-column: 1; grid-row: 1; }
+.ga-trend-card    { grid-column: 2; grid-row: 1; }
+.ga-kpi-card:nth-of-type(3) { grid-column: 3; grid-row: 1; }
+.ga-kpi-card:nth-of-type(4) { grid-column: 4; grid-row: 1; }
+
+/* Row 2-3: Performance spans 2 rows | Insights row2 | Coaching row3 */
+.ga-perf-card     { grid-column: 1 / 3; grid-row: 2 / 4; }
+.ga-insights-card { grid-column: 3 / 5; grid-row: 2; }
+.ga-coaching-card { grid-column: 3 / 5; grid-row: 3; }
+
+/* Row 4: Events full width */
+.ga-events-card   { grid-column: 1 / 5; grid-row: 4; }
 
 /* ---- Score Gauge Card ---- */
 .ga-score-card { text-align: center; padding: 14px 12px; }
@@ -358,14 +390,46 @@ html, body {
 .ga-event-bar      { height: 16px; border-radius: 2px; min-width: 4px; transition: width 0.3s; }
 .ga-event-count    { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
 
-@media (max-width: 1100px) {
+/* ---- Responsive: medium screens ---- */
+@media (max-width: 1200px) {
+  .homepage-grid {
+    grid-template-columns: 220px 1fr 150px 150px;
+    gap: 10px;
+  }
+}
+
+/* ---- Responsive: small screens - 2 column ---- */
+@media (max-width: 900px) {
   .homepage-grid {
     grid-template-columns: 1fr 1fr;
   }
-  .ga-score-card, .ga-trend-card, .ga-kpi-card,
-  .ga-perf-card, .ga-insights-card,
-  .ga-coaching-card, .ga-events-card {
+  .ga-score-card,
+  .ga-trend-card,
+  .ga-kpi-card:nth-of-type(3),
+  .ga-kpi-card:nth-of-type(4),
+  .ga-perf-card,
+  .ga-insights-card,
+  .ga-coaching-card,
+  .ga-events-card {
     grid-column: span 1 !important;
+    grid-row: auto !important;
+  }
+}
+
+/* ---- Responsive: very small - single column ---- */
+@media (max-width: 600px) {
+  .homepage-grid {
+    grid-template-columns: 1fr;
+  }
+  .ga-score-card,
+  .ga-trend-card,
+  .ga-kpi-card:nth-of-type(3),
+  .ga-kpi-card:nth-of-type(4),
+  .ga-perf-card,
+  .ga-insights-card,
+  .ga-coaching-card,
+  .ga-events-card {
+    grid-column: 1 !important;
     grid-row: auto !important;
   }
 }
@@ -907,3 +971,21 @@ html, body {
 
 .score-card { text-align: center; }
 
+/* ============================================================
+   HORIZONTAL SCROLL — for narrow windows / small screens
+   ============================================================ */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Smooth scroll indicator */
+.table-scroll::-webkit-scrollbar { height: 4px; }
+.table-scroll::-webkit-scrollbar-track { background: transparent; }
+.table-scroll::-webkit-scrollbar-thumb { background: #BDBDBD; border-radius: 2px; }
+
+/* Ensure report pages don't clip */
+.report-page { min-width: 0; }
+
+/* Homepage grid min-width so it scrolls horizontally on small screens */
+.homepage-grid { min-width: 720px; }

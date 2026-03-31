@@ -95,7 +95,7 @@ const DynSidebar = defineComponent({
         <img src="images/icon.svg" alt="Logo" class="dyn-logo-img" />
         <span class="dyn-logo-text">dynalytix</span>
         <button class="dyn-pin-btn" :class="{ 'dyn-pinned': pinned }" @click.stop="togglePin"
-          :title="pinned ? 'Collapse sidebar' : 'Expand sidebar'">&#x2316;</button>
+          :title="pinned ? 'Collapse sidebar' : 'Expand sidebar'"></button>
       </div>
 
       <nav class="dyn-sidebar-nav">

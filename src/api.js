@@ -1,5 +1,5 @@
 /**
- * api.js — Geotab API Wrapper
+ * api.js — 
  * All Geotab API calls with caching and error handling
  *
  * NOTE: Get() has a 500 record default limit.

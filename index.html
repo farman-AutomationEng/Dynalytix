@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5"/>
+  <title>Dynalytix</title>
+  <link rel="stylesheet" href="styles/main.css" />
+
+  <!-- Vue 3 CDN (global build) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Vue app mount point -->
+  <div id="dyn-app"></div>
+
+  <!-- Utilities and API (framework-agnostic, unchanged) -->
+  <script src="src/utils.js"></script>
+  <script src="src/api.js"></script>
+
+  <!-- Vue page components (must load before app.js) -->
+  <script src="src/pages/homepage.js"></script>
+  <script src="src/pages/leaderboard.js"></script>
+  <script src="src/pages/scored-events.js"></script>
+  <script src="src/pages/scorecard.js"></script>
+  <script src="src/pages/preventative-maintenance.js"></script>
+  <script src="src/pages/compliance-utilization.js"></script>
+  <script src="src/pages/coaching-engagement.js"></script>
+  <script src="src/pages/settings.js"></script>
+
+  <!-- Vue app bootstrap (must load last) -->
+  <script src="src/app.js"></script>
+
+</body>
+</html>

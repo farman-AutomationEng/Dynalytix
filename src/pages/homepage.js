@@ -1,5 +1,5 @@
 /**
- * homepage.js — Vue 3 Homepage with native drag-and-drop layout editor
+ * homepage.js — Homepage with native drag-and-drop layout editor
  *
  * Edit mode: HTML5 drag API to reorder widgets in the CSS grid.
  * No external library — no layout conflicts.

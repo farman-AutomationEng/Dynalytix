@@ -7,7 +7,7 @@
  *  - Global reactive store injected into all child components
  *  - Dynamic component routing via store.currentPage
  *
- * Page components are registered globally and resolved by name.
+ * Page components are registered global and resolved by name.
  */
 
 const { createApp, ref, reactive, computed, provide, inject,

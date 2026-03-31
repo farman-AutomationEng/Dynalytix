@@ -2,7 +2,7 @@
  * app.js — Dynalytix Vue 3 Application
  *
  * Architecture:
- *  - Vue 3 Composition API (no build step — CDN global build)
+ *  - Vue 3 Composition API 
  *  - Geotab SDK lifecycle: initialize → focus → blur
  *  - Global reactive store injected into all child components
  *  - Dynamic component routing via store.currentPage

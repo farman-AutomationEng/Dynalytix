@@ -1,0 +1,16 @@
+{
+  "name": "Dynalytix",
+  "supportEmail": "farman@dynastync.com",
+  "version": "2.0.0",
+  "items": [
+    {
+      "url": "https://farman-automationeng.github.io/Dynalytix/index.html",
+      "path": "ActivityLink/",
+      "menuName": {
+        "en": "Dynalytix"
+      },
+      "icon": "https://farman-automationeng.github.io/Dynalytix/icon.svg"
+    }
+  ],
+  "isSigned": false
+}
